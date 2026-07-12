@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # Native protocol
+
+    environment:
+      CLICKHOUSE_DB: ingestion
+      CLICKHOUSE_USER: root
+      CLICKHOUSE_PASSWORD: root
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+
+volumes:
+  clickhouse_data:
