@@ -2,73 +2,52 @@ from collections.abc import Iterator
 
 import mariadb
 
-
-def create_mariadb_connection_params(
-    host: str,
-    user: str,
-    password: str,
-    database: str,
-) -> dict:
-    return {
-        "host": host,
-        "user": user,
-        "password": password,
-        "database": database,
-    }
+from .base import BaseConnector
+from src.models.schema import TableConfig
+from src.models.mariadb_config import MariaDBConfig
+from src.sql_builder.query_builder import QueryBuilder
 
 
-def create_mariadb_connection(params: dict) -> mariadb.Connection:
-    return mariadb.connect(**params)
+class MariaDBConnector(BaseConnector):
 
+    def __init__(self, config: MariaDBConfig):
+        self.config = config
 
-def extract(
-    connection: mariadb.Connection,
-    query: str,
-    fetch_size: int = 1000,
-) -> Iterator[dict]:
+    def _create_connection(self) -> mariadb.Connection:
+        return mariadb.connect(
+            host=self.config.host,
+            user=self.config.user,
+            password=self.config.password,
+            database=self.config.database,
+        )
 
-    cursor = connection.cursor()
+    def extract(
+        self,
+        table: TableConfig,
+        fetch_size: int = 5000,
+    ) -> Iterator[dict]:
 
-    cursor.execute(query)
+        try:
+            connection = self._create_connection()
 
-    columns = [column[0] for column in cursor.description]
+            cursor = connection.cursor()
 
-    while True:
+            query = QueryBuilder.build_select(table)
 
-        rows = cursor.fetchmany(fetch_size)
+            cursor.execute(query)
 
-        if not rows:
-            break
+            columns = [c[0] for c in cursor.description]
 
-        for row in rows:
-            yield dict(zip(columns, row))
+            while True:
 
-    cursor.close()
+                rows = cursor.fetchmany(fetch_size)
 
+                if not rows:
+                    break
 
+                for row in rows:
+                    yield dict(zip(columns, row))
 
-if __name__ == "__main__":
-    from dotenv import load_dotenv
-    from src.sql_builder import build_select
-    import os
-
-    load_dotenv()
-
-    host = os.getenv("MARIADB_HOST")
-    user = os.getenv("MARIADB_USER")
-    password = os.getenv("MARIADB_PASSWORD")
-    database = os.getenv("MARIADB_DATABASE")
-
-    params = create_mariadb_connection_params(
-        host=host,  
-        user=user,
-        password=password,
-        database=database,
-    )
-
-    connection = create_mariadb_connection(params)
-
-    query = "SELECT * FROM esami_categorie"
-
-    for record in extract(connection, query):
-        print(record)
+        finally:
+            cursor.close()
+            connection.close()
