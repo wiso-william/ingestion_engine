@@ -1,11 +1,14 @@
-from collections.abc import Iterator
+from collections.abc import Iterable
 
 import clickhouse_connect
 
+from src.database.base import BaseLoader
 from src.models.clickhouse import ClickHouseConfig
+from src.models.schema import TableConfig
+from src.sql_builder.query_builder import QueryBuilder
 
 
-class ClickHouseLoader:
+class ClickHouseLoader(BaseLoader):
 
     def __init__(self, config: ClickHouseConfig):
         self.config = config
@@ -19,21 +22,20 @@ class ClickHouseLoader:
             database=self.config.database,
     )
 
-    def create_table(self, ddl: str):
+    def create_table(self, table: TableConfig)  -> None:
         client = self.__get_client()
+
+        ddl = QueryBuilder.build_ddl(table)
+
         try:
             client.command(ddl)
-        except Exception as e:
-            print(f"Error occurred while creating table: {e}")
         finally:
             client.close()
 
-    def insert(self, table: str, data: Iterator[list]):
+    def load(self, table: str, data: Iterable[tuple]) -> None:
         client = self.__get_client()
         try:
             client.insert(table=table, data=data)
-        except Exception as e:
-            print(f"Error occurred while inserting data: {e}")
         finally:
             client.close()
 
