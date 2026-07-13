@@ -49,7 +49,7 @@ def extract(
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
-    from src.sql_renderer import build_select
+    from src.sql_builder import build_select
     import os
 
     load_dotenv()

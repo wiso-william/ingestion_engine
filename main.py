@@ -1,5 +1,5 @@
 from src.normalizers.normalizer import normalize_json
-from src.sql_renderer.ddl import build_ddl
+from src.sql_builder.query_builder import build_ddl
 from src.models.users import users
 from src. database.clickhouse import get_client
 

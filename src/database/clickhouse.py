@@ -16,7 +16,7 @@ def get_client():
 
 
 if __name__ == '__main__':
-    from src.sql_renderer.ddl import build_ddl, build_select
+    from src.sql_builder.query_builder import build_ddl, build_select
 
     from src.models.users import users
 
