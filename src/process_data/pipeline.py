@@ -2,7 +2,7 @@ from src.connectors.base import BaseConnector
 from src.database.clickhouse import ClickHouseLoader
 from src.normalizers.base import BaseNormalizer
 from src.models.schema import TableConfig
-from src.batchers.the_butcher import batcher
+from src.batchers.batcher import batcher
 
 def run(
         connector: BaseConnector,
