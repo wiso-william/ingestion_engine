@@ -1,14 +1,15 @@
-from src.models.schema import TableConfig, Column
-from src.database.clickhouse import get_client 
+from collections.abc import Iterator
 
 import requests
 
+from src.models.schema import TableConfig, Column
+from src.database.clickhouse import get_client 
 
+def json_connector(url: str) -> Iterator[dict]:
+    response = requests.get(url=url, timeout=30).json()
+    response.raise_for_status()
 
-def json_connector(url: str) -> dict:
-    res = requests.get(url=url).json()
-
-    for row in res:
+    for row in response:
         print("Nuova Riga")
         yield row
 

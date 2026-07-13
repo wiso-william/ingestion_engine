@@ -16,8 +16,6 @@ ENGINE = MergeTree()
 ORDER BY {table.order_by}
     """
 
-print(build_ddl(users))
-
 
 def build_select(table: TableConfig) -> str:
     columns = ",\n    ".join(
@@ -33,5 +31,3 @@ FROM
 """
     
     return select
-
-print(build_select(users))

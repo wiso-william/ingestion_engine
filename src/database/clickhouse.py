@@ -21,9 +21,7 @@ if __name__ == '__main__':
     from src.models.users import users
 
     ddl = build_ddl(users)
-
     client = get_client()
-
     client.command(ddl)
 
     
