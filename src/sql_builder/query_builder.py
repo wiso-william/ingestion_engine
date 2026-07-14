@@ -11,7 +11,7 @@ class QueryBuilder:
         )
 
         return f"""
-        CREATE TABLE IF NOT EXISTS {table.name}
+        CREATE OR REPLACE TABLE {table.name}
         (
         {columns}
         )
