@@ -75,5 +75,12 @@ All of the models are examples, you can freely get rid of all except:
 - api_config.py
 - mariadb_config.py
 
+## Future evolutions
+I'll implement Airflow Directly in this project as an orchestrator without using task mapping.
+
+It will be a single DAG with multiple tasks with 1 task working on a single table written explicitly.
+
+After a while I'll implement dynamic task mapping 
+
 ## License
 This project is intended for educational purposes and personal experimentation with modern Data Engineering practices.
