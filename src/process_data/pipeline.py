@@ -42,36 +42,3 @@ def run(
     except Exception as e:
         logger.exception("Data ingestion pipeline failed for table %s", table.name)
         raise RuntimeError(f"Data ingestion pipeline failed for table {table.name}") from e
-
-
-if __name__ == '__main__':
-    import os
-    from dotenv import load_dotenv
-
-    from src.connectors.mariadb import MariaDBConnector
-    from src.normalizers.normal import DictNormalizer
-    from src.database.clickhouse import ClickHouseLoader
-    from src.models.clickhouse import ClickHouseConfig
-    from src.models.esami_categorie import esami_categorie
-    from src.models.mariadb_config import MariaDBConfig
-
-    load_dotenv()
-
-    config = MariaDBConfig(
-        host=os.getenv("MARIADB_HOST"),
-        user=os.getenv("MARIADB_USER"),
-        password=os.getenv("MARIADB_PASSWORD"),
-        database=os.getenv("MARIADB_DATABASE")
-    )
-
-    connector = MariaDBConnector(config)
-    normalizer = DictNormalizer()
-    loader = ClickHouseLoader(ClickHouseConfig(
-        host=os.getenv("CLICKHOUSE_HOST"),
-        port=int(os.getenv("CLICKHOUSE_PORT")),
-        user=os.getenv("CLICKHOUSE_USER"),
-        password=os.getenv("CLICKHOUSE_PASSWORD"),
-        database=os.getenv("CLICKHOUSE_DATABASE")
-    ))
-
-    run(connector, normalizer, loader, esami_categorie, batch_size=1000)

@@ -1,0 +1,46 @@
+from dotenv import load_dotenv
+import os
+
+from src.connectors.mariadb import MariaDBConnector
+from src.database.clickhouse import ClickHouseLoader
+from src.log_config.config import setup_logging
+from src.models.clickhouse import ClickHouseConfig
+from src.models.esami_categorie import esami_categorie
+from src.models.mariadb_config import MariaDBConfig
+from src.normalizers.normal import DictNormalizer
+from src.process_data.pipeline import run
+
+
+load_dotenv()
+setup_logging()
+
+BATCH_SIZE = 10000
+
+mariadb_config = MariaDBConfig(
+    host=os.getenv("MARIADB_HOST"),
+    user=os.getenv("MARIADB_USER"),
+    password=os.getenv("MARIADB_PASSWORD"),
+    database=os.getenv("MARIADB_DATABASE")
+)
+
+clickhouse_config = ClickHouseConfig(
+        host=os.getenv("CLICKHOUSE_HOST"),
+        port=int(os.getenv("CLICKHOUSE_PORT")),
+        user=os.getenv("CLICKHOUSE_USER"),
+        password=os.getenv("CLICKHOUSE_PASSWORD"),
+        database=os.getenv("CLICKHOUSE_DATABASE")
+    )
+
+
+connector = MariaDBConnector(mariadb_config)
+normalizer = DictNormalizer()
+loader = ClickHouseLoader(clickhouse_config)
+
+
+run(
+    connector=connector,
+    normalizer=normalizer,
+    loader=loader,
+    batch_size=BATCH_SIZE,
+    table=esami_categorie,
+)

@@ -90,22 +90,3 @@ class ClickHouseLoader(BaseLoader):
                 client.close()
 
             logger.debug("ClickHouse client closed")
-
-
-if __name__ == '__main__':
-    import os 
-
-    from src.sql_builder.query_builder import QueryBuilder
-
-    from src.models.users import users
-
-    ddl = QueryBuilder.build_ddl(users)
-
-    loader = ClickHouseLoader(ClickHouseConfig(
-        host=os.getenv("CLICKHOUSE_HOST"),
-        port=int(os.getenv("CLICKHOUSE_PORT")),
-        user=os.getenv("CLICKHOUSE_USER"),
-        password=os.getenv("CLICKHOUSE_PASSWORD"),
-        database=os.getenv("CLICKHOUSE_DATABASE")
-    ))
-    loader.create_table(ddl)
