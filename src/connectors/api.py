@@ -5,7 +5,9 @@ import requests
 from .base import BaseConnector
 from src.models.api_config import APIConfig
 
+
 logger = logging.getLogger(__name__)
+
 
 class APIConnector(BaseConnector):
 
@@ -33,3 +35,4 @@ class APIConnector(BaseConnector):
 
         except requests.RequestException as e:
             logger.exception("Failed to retrieve data from %s", self.config.url)
+            raise RuntimeError(f"Failed to retrieve data from {self.config.url}") from e    
