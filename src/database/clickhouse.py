@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+import logging 
 
 import clickhouse_connect
 
@@ -7,6 +8,9 @@ from src.models.clickhouse import ClickHouseConfig
 from src.models.schema import TableConfig
 from src.sql_builder.query_builder import QueryBuilder
 
+    
+logger = logging.getLogger(__name__)
+
 
 class ClickHouseLoader(BaseLoader):
 
@@ -14,6 +18,10 @@ class ClickHouseLoader(BaseLoader):
         self.config = config
     
     def __get_client(self):
+        logger.info("Connecting to ClickHouse (%s/%s)", 
+                    self.config.host, 
+                    self.config.database)
+
         return clickhouse_connect.get_client(
             host=self.config.host,
             port=self.config.port,
@@ -22,22 +30,66 @@ class ClickHouseLoader(BaseLoader):
             database=self.config.database,
     )
 
-    def create_table(self, table: TableConfig)  -> None:
-        client = self.__get_client()
-
-        ddl = QueryBuilder.build_ddl(table)
+    def create_table(self, table: TableConfig) -> None:
+        client = None
 
         try:
+            client = self.__get_client()
+
+            ddl = QueryBuilder.build_ddl(table)
+
+            logger.info("Creating table %s", table.name)
+            logger.debug("Executing DDL:\n%s", ddl)
+
             client.command(ddl)
-        finally:
-            client.close()
 
-    def load(self, table: str, data: Iterable[tuple]) -> None:
-        client = self.__get_client()
-        try:
-            client.insert(table=table, data=data)
+            logger.info("Table %s created successfully", table.name)
+
+        except Exception:
+            logger.exception(
+                "Failed to create table %s",
+                table.name,
+            )
+            raise
+
         finally:
-            client.close()
+            if client is not None:
+                client.close()
+
+            logger.debug("ClickHouse client closed")
+
+    def load(
+        self,
+        table: str,
+        data: Iterable[tuple],
+    ) -> None:
+
+        client = None
+
+        try:
+            client = self.__get_client()
+
+            logger.debug("Loading data into %s", table)
+
+            client.insert(
+                table=table,
+                data=data,
+            )
+
+            logger.debug("Insert completed for %s", table)
+
+        except Exception:
+            logger.exception(
+                "Failed inserting data into %s",
+                table,
+            )
+            raise
+
+        finally:
+            if client is not None:
+                client.close()
+
+            logger.debug("ClickHouse client closed")
 
 
 if __name__ == '__main__':
