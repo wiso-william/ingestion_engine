@@ -1,8 +1,11 @@
-import requests
+import logging
 from collections.abc import Iterator
+import requests
 
 from .base import BaseConnector
 from src.models.api_config import APIConfig
+
+logger = logging.getLogger(__name__)
 
 class APIConnector(BaseConnector):
 
@@ -11,13 +14,22 @@ class APIConnector(BaseConnector):
 
     def extract(self) -> Iterator[dict]:
 
-        response = requests.get(
-            self.config.url,
-            headers=self.config.headers,
-            params=self.config.params,
-        )
+        logger.info("Extraction started, requesting data from %s", self.config.url)
 
-        response.raise_for_status()
+        try:
 
-        for record in response.json():
-            yield record
+            response = requests.get(
+                self.config.url,
+                headers=self.config.headers,
+                params=self.config.params,
+            )
+
+            response.raise_for_status()
+
+            logger.info("Received response with status code = %d", response.status_code)
+
+            for record in response.json():
+                yield record
+
+        except requests.RequestException as e:
+            logger.exception("Failed to retrieve data from %s", self.config.url)
