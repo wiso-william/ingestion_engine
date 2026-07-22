@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 
 from .base import BaseNormalizer
-from src.ingestion_engine.models.schema import TableConfig
+from ingestion_engine.models.schema import TableConfig
 
 class DictNormalizer(BaseNormalizer):
     def normalize(

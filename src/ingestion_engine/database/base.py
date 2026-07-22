@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 
-from src.ingestion_engine.models.schema import TableConfig
+from ingestion_engine.models.schema import TableConfig
 
 
 class BaseLoader(ABC):

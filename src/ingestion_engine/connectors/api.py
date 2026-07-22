@@ -3,7 +3,7 @@ from collections.abc import Iterator
 import requests
 
 from .base import BaseConnector
-from src.ingestion_engine.models.api_config import APIConfig
+from ingestion_engine.models.api_config import APIConfig
 
 
 logger = logging.getLogger(__name__)
