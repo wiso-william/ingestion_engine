@@ -4,9 +4,9 @@ import logging
 import mariadb
 
 from .base import BaseConnector
-from src.models.schema import TableConfig
-from src.models.mariadb_config import MariaDBConfig
-from src.sql_builder.query_builder import QueryBuilder
+from src.ingestion_engine.models.schema import TableConfig
+from src.ingestion_engine.models.mariadb_config import MariaDBConfig
+from src.ingestion_engine.sql_builder.query_builder import QueryBuilder
 
 
 logger = logging.getLogger(__name__)

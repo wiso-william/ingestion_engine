@@ -1,5 +1,5 @@
-from src.models.users import users
-from src.models.schema import TableConfig
+from src.ingestion_engine.models.users import users
+from src.ingestion_engine.models.schema import TableConfig
 
 class QueryBuilder:
 
@@ -36,6 +36,6 @@ class QueryBuilder:
     
 
 if __name__ == "__main__":
-    from src.models.users import users 
+    from src.ingestion_engine.models.users import users 
 
     print(QueryBuilder.build_ddl(users))
