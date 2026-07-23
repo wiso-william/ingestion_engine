@@ -5,7 +5,7 @@ from ingestion_engine.connectors.mariadb import MariaDBConnector
 from ingestion_engine.database.clickhouse import ClickHouseLoader
 from ingestion_engine.log_config.config import setup_logging
 from ingestion_engine.models.clickhouse import ClickHouseConfig
-from ingestion_engine.models.esami_categorie import esami_categorie
+from examples.tables.esami_categorie import esami_categorie
 from ingestion_engine.models.mariadb_config import MariaDBConfig
 from ingestion_engine.normalizers.normal import DictNormalizer
 from ingestion_engine.process_data.pipeline import run

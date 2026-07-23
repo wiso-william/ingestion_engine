@@ -2,7 +2,7 @@ import logging
 
 from ingestion_engine.connectors.base import BaseConnector
 from ingestion_engine.database.clickhouse import ClickHouseLoader
-from ingestion_engine.models import esami_categorie
+from examples.tables import esami_categorie
 from ingestion_engine.normalizers.base import BaseNormalizer
 from ingestion_engine.models.schema import TableConfig
 from ingestion_engine.batchers.batcher import batcher

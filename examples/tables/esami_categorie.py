@@ -1,4 +1,4 @@
-from .schema import Column, TableConfig
+from ingestion_engine.models.schema import Column, TableConfig
 
 esami_categorie = TableConfig(
     name="esami_categorie",
