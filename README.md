@@ -16,6 +16,7 @@ The project is built around a modular architecture that separates extraction, tr
 - Easy integration with orchestration tools such as Apache Airflow
 
 ## Project Structure
+```
 src/
 ├── connectors/
 ├── database/
@@ -25,31 +26,34 @@ src/
 ├── sql_builder/
 ├── batchers/
 └── log_config/
-Architecture
-          Source
-             │
-             ▼
-      +--------------+
-      |  Connector   |
-      +--------------+
-             │
-             ▼
-      +--------------+
-      | Normalizer   |
-      +--------------+
-             │
-             ▼
-      +--------------+
-      |   Batcher    |
-      +--------------+
-             │
-             ▼
-      +--------------+
-      |    Loader    |
-      +--------------+
-             │
-             ▼
-       Destination DB
+```
+## Architecture
+```
+                                                            Source
+                                                               │
+                                                               ▼
+                                                        +--------------+
+                                                        |  Connector   |
+                                                        +--------------+
+                                                               │
+                                                               ▼
+                                                        +--------------+
+                                                        | Normalizer   |
+                                                        +--------------+
+                                                               │
+                                                               ▼
+                                                        +--------------+
+                                                        |   Batcher    |
+                                                        +--------------+
+                                                               │
+                                                               ▼
+                                                        +--------------+
+                                                        |    Loader    |
+                                                        +--------------+
+                                                               │
+                                                               ▼
+                                                         Destination DB
+```
 
 ## Current Components
 Connectors
