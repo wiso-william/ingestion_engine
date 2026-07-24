@@ -3,10 +3,10 @@ import logging
 
 import clickhouse_connect
 
-from ingestion_engine.database.base import BaseLoader
-from ingestion_engine.models.clickhouse import ClickHouseConfig
-from ingestion_engine.models.schema import TableConfig
+from ingestion_engine.config.clickhouse import ClickHouseConfig
 from ingestion_engine.sql_builder.query_builder import QueryBuilder
+from ingestion_engine.schema.table import TableConfig
+from ingestion_engine.database.base import BaseLoader
 
     
 logger = logging.getLogger(__name__)

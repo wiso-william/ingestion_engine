@@ -1,4 +1,4 @@
-from ingestion_engine.models.schema import Column, TableConfig
+from ingestion_engine import Column, TableConfig
 
 users = TableConfig(
     name="users",

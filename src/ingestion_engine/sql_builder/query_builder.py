@@ -1,5 +1,4 @@
-from examples.tables.users import users
-from ingestion_engine.models.schema import TableConfig
+from ingestion_engine.schema.table import TableConfig
 
 class QueryBuilder:
 

@@ -1,10 +1,5 @@
 from dataclasses import dataclass
-
-@dataclass
-class Column:
-    name: str 
-    type: str 
-    source_address: str
+from ingestion_engine.schema.column import Column
 
 @dataclass 
 class TableConfig:

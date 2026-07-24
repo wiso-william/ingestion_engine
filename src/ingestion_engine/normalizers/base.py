@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
-from ingestion_engine.models.schema import TableConfig
+from ingestion_engine.schema.table import TableConfig
 
 class BaseNormalizer(ABC):
 

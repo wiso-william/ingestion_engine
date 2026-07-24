@@ -1,4 +1,5 @@
-from ingestion_engine import Column, TableConfig
+from ingestion_engine.schema.column import Column
+from ingestion_engine.schema.table import TableConfig
 
 esami_categorie = TableConfig(
     name="esami_categorie",

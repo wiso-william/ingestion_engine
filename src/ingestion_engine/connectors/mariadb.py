@@ -4,8 +4,8 @@ import logging
 import mariadb
 
 from .base import BaseConnector
-from ingestion_engine.models.schema import TableConfig
-from ingestion_engine.models.mariadb_config import MariaDBConfig
+from ingestion_engine.config.mariadb_config import MariaDBConfig
+from ingestion_engine.schema.table import TableConfig
 from ingestion_engine.sql_builder.query_builder import QueryBuilder
 
 

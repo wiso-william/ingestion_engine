@@ -1,14 +1,17 @@
 from dotenv import load_dotenv
 import os
 
-from ingestion_engine.connectors.mariadb import MariaDBConnector
-from ingestion_engine.database.clickhouse import ClickHouseLoader
-from ingestion_engine.log_config.config import setup_logging
-from ingestion_engine.models.clickhouse import ClickHouseConfig
+
 from examples.tables.esami_categorie import esami_categorie
-from ingestion_engine.models.mariadb_config import MariaDBConfig
-from ingestion_engine.normalizers.normal import DictNormalizer
-from ingestion_engine.process_data.pipeline import run
+from ingestion_engine import (
+    ClickHouseConfig, 
+    ClickHouseLoader,
+    DictNormalizer,
+    MariaDBConfig,
+    MariaDBConnector,
+    run
+)
+from ingestion_engine.config.log_config import setup_logging
 
 
 load_dotenv()
@@ -31,11 +34,9 @@ clickhouse_config = ClickHouseConfig(
         database=os.getenv("CLICKHOUSE_DATABASE")
     )
 
-
 connector = MariaDBConnector(mariadb_config)
 normalizer = DictNormalizer()
 loader = ClickHouseLoader(clickhouse_config)
-
 
 run(
     connector=connector,
