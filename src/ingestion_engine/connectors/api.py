@@ -14,25 +14,59 @@ class APIConnector(BaseConnector):
     def __init__(self, config: APIConfig):
         self.config = config
 
-    def extract(self) -> Iterator[dict]:
+def extract(self) -> Iterator[dict]:
+    """Extract records from the configured API endpoint.
 
-        logger.info("Extraction started, requesting data from %s", self.config.url)
+    Yields:
+        dict: Each record returned by the API.
 
-        try:
+    Raises:
+        MissingSchema: If the configured URL has no valid scheme.
+        requests.exceptions.Timeout: If the request exceeds the timeout.
+        RuntimeError: If the request fails for another reason.
+    """
 
-            response = requests.get(
-                self.config.url,
-                headers=self.config.headers,
-                params=self.config.params,
-            )
+    logger.info(
+        "Extraction started, requesting data from %s",
+        self.config.url,
+    )
 
-            response.raise_for_status()
+    try:
+        response = requests.get(
+            self.config.url,
+            headers=self.config.headers,
+            params=self.config.params,
+        )
 
-            logger.info("Received response with status code = %d", response.status_code)
+        response.raise_for_status()
 
-            for record in response.json():
-                yield record
+        logger.info(
+            "Received response with status code = %d",
+            response.status_code,
+        )
 
-        except requests.RequestException as e:
-            logger.exception("Failed to retrieve data from %s", self.config.url)
-            raise RuntimeError(f"Failed to retrieve data from {self.config.url}") from e    
+        for record in response.json():
+            yield record
+
+    except requests.exceptions.MissingSchema as e:
+        logger.exception(
+            "Invalid API URL: %s",
+            self.config.url,
+        )
+        raise
+
+    except requests.exceptions.Timeout as e:
+        logger.exception(
+            "Request to %s timed out",
+            self.config.url,
+        )
+        raise
+
+    except requests.exceptions.RequestException as e:
+        logger.exception(
+            "Failed to retrieve data from %s",
+            self.config.url,
+        )
+        raise RuntimeError(
+            f"Failed to retrieve data from {self.config.url}"
+        ) from e

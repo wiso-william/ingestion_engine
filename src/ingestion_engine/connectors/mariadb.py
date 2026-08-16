@@ -36,6 +36,18 @@ class MariaDBConnector(BaseConnector):
         table: TableConfig,
         fetch_size: int = 5000,
     ) -> Iterator[dict]:
+        """Extract records from a MariaDB table in batches.
+
+        Args:
+            table: Configuration defining the table to extract.
+            fetch_size: Number of rows fetched from the database per batch.
+
+        Yields:
+            dict: Records extracted from the table.
+
+        Raises:
+            mariadb.Error: If the extraction fails.
+        """
 
         connection = None
         cursor = None
