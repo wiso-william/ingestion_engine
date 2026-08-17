@@ -84,14 +84,14 @@ class ClickHouseLoader(BaseLoader):
 
     def load(
         self,
-        table: str,
-        data: Iterable[tuple],
+        table: TableConfig,
+        rows: Iterable[tuple],
     ) -> None:
         """Insert normalized rows into an existing ClickHouse table.
 
         Args:
-            table: Name of the target table.
-            data: Normalized rows to insert, ordered as the table columns.
+            table: Configuration defining the target table.
+            rows: Normalized rows to insert, ordered as the table columns.
 
         Raises:
             Exception: If the insert fails.
@@ -102,19 +102,19 @@ class ClickHouseLoader(BaseLoader):
         try:
             client = self.__get_client()
 
-            logger.debug("Loading data into %s", table)
+            logger.debug("Loading data into %s", table.name)
 
             client.insert(
-                table=table,
-                data=data,
+                table=table.name,
+                data=rows,
             )
 
-            logger.debug("Insert completed for %s", table)
+            logger.debug("Insert completed for %s", table.name)
 
         except Exception:
             logger.exception(
                 "Failed inserting data into %s",
-                table,
+                table.name,
             )
             raise
 

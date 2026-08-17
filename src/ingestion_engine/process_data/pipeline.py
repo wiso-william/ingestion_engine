@@ -1,6 +1,6 @@
 import logging
 
-from ingestion_engine.database.clickhouse import ClickHouseLoader
+from ingestion_engine.database.base import BaseLoader
 from ingestion_engine.schema.table import TableConfig
 from ingestion_engine.connectors.base import BaseConnector
 from ingestion_engine.normalizers.base import BaseNormalizer
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def run(
         connector: BaseConnector,
         normalizer: BaseNormalizer,
-        loader: ClickHouseLoader,
+        loader: BaseLoader,
         table: TableConfig,
         batch_size: int = 1000
 ) -> None:
@@ -52,7 +52,7 @@ def run(
 
             logger.info("Loading batch %d with %d rows into ClickHouse", batch_count, len(batch))
 
-            loader.load(table.name, batch)
+            loader.load(table, batch)
 
         logger.info("Data ingestion pipeline completed successfully for table %s", table.name) 
 
