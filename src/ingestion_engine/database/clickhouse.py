@@ -13,11 +13,23 @@ logger = logging.getLogger(__name__)
 
 
 class ClickHouseLoader(BaseLoader):
+    """Loader creating and filling tables on a ClickHouse server.
+
+    Every operation opens its own client and closes it afterwards, so the
+    loader holds no connection between calls.
+    """
 
     def __init__(self, config: ClickHouseConfig):
         self.config = config
-    
+
     def __get_client(self):
+        """Create a client connected to the configured ClickHouse database.
+
+        Returns:
+            clickhouse_connect.driver.Client: A client connected to the
+                configured database.
+        """
+
         logger.info("Connecting to ClickHouse (%s/%s)", 
                     self.config.host, 
                     self.config.database)
@@ -31,6 +43,18 @@ class ClickHouseLoader(BaseLoader):
     )
 
     def create_table(self, table: TableConfig) -> None:
+        """Create the destination table described by the configuration.
+
+        The generated DDL replaces any existing table with the same name, so
+        the data already loaded is discarded.
+
+        Args:
+            table: Configuration defining the table to create.
+
+        Raises:
+            Exception: If the DDL execution fails.
+        """
+
         client = None
 
         try:
@@ -63,6 +87,15 @@ class ClickHouseLoader(BaseLoader):
         table: str,
         data: Iterable[tuple],
     ) -> None:
+        """Insert normalized rows into an existing ClickHouse table.
+
+        Args:
+            table: Name of the target table.
+            data: Normalized rows to insert, ordered as the table columns.
+
+        Raises:
+            Exception: If the insert fails.
+        """
 
         client = None
 

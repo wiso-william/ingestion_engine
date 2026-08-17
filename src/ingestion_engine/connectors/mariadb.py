@@ -13,11 +13,21 @@ logger = logging.getLogger(__name__)
 
 
 class MariaDBConnector(BaseConnector):
+    """Connector extracting records from a MariaDB database."""
 
     def __init__(self, config: MariaDBConfig):
         self.config = config
 
     def _create_connection(self) -> mariadb.Connection:
+        """Open a connection to the configured MariaDB database.
+
+        Returns:
+            mariadb.Connection: An open connection to the database.
+
+        Raises:
+            mariadb.Error: If the connection cannot be established.
+        """
+
         logger.info(
             "Connecting to MariaDB (%s/%s)",
             self.config.host,

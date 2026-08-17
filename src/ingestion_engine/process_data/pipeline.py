@@ -17,9 +17,27 @@ def run(
         table: TableConfig,
         batch_size: int = 1000
 ) -> None:
+    """Run the ingestion pipeline for a single table.
+
+    Extracts the records from the source, normalizes them, creates the
+    destination table and loads the rows batch by batch.
+
+    Args:
+        connector: Connector extracting the records from the source system.
+        normalizer: Normalizer converting the records into loadable rows.
+        loader: Loader creating the destination table and inserting the rows.
+        table: Configuration defining the table to ingest.
+        batch_size: Maximum number of rows sent to the loader per insert.
+
+    Raises:
+        RuntimeError: If any stage of the pipeline fails.
+    """
+
     logger.info("Starting data ingestion pipeline for table %s", table.name)
 
     try:
+        # Extraction and normalization are lazy: nothing is read from the
+        # source until the batches are consumed below.
         records = connector.extract(table)
         rows = normalizer.normalize(records, table)
 

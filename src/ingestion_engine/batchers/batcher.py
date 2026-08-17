@@ -7,6 +7,19 @@ def batcher(
     rows: Iterable[tuple],
     batch_size: int,
 ) -> Iterator[list[tuple]]:
+    """Group rows into batches of fixed size.
+
+    Rows are consumed lazily, so only one batch at a time is kept in memory.
+
+    Args:
+        rows: Normalized rows to group.
+        batch_size: Maximum number of rows per batch.
+
+    Yields:
+        list[tuple]: Batches of rows. Only the last batch can be smaller than
+            batch_size.
+    """
+
     batch: list[tuple] = []
 
     logger.debug(f"Starting batcher with batch size {batch_size}")

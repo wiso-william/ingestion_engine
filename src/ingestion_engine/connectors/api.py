@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class APIConnector(BaseConnector):
+    """Connector extracting records from a REST API endpoint.
+
+    The endpoint is expected to answer with a JSON array of records.
+    """
 
     def __init__(self, config: APIConfig):
         self.config = config

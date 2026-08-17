@@ -11,8 +11,13 @@ BACKUP_COUNT = 5
 
 
 def setup_logging(level: str = "INFO") -> None:
-    """
-    Configure application logging.
+    """Configure application logging.
+
+    Attaches to the root logger a console handler and a rotating file handler
+    writing to logs/ingestion.log, keeping up to BACKUP_COUNT rotated files.
+
+    Args:
+        level: Minimum level logged by the root logger.
     """
 
     logging.config.dictConfig(
