@@ -17,8 +17,8 @@ from .process_data.pipeline import run
 from .sql_builder.query_builder import QueryBuilder
 
 __all__ = [
-    "ApiConfig"
-    "ApiConnector",
+    "APIConfig",
+    "APIConnector",
     "Column",
     "TableConfig",
     "MariaDBConfig",
@@ -26,5 +26,6 @@ __all__ = [
     "MariaDBConnector",
     "ClickHouseLoader",
     "DictNormalizer",
+    "QueryBuilder",
     "run",
 ]
