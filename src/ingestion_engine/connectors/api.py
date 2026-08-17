@@ -5,6 +5,7 @@ import requests
 
 from .base import BaseConnector
 from ingestion_engine.config.api_config import APIConfig
+from ingestion_engine.schema.table import TableConfig
 
 
 logger = logging.getLogger(__name__)
@@ -19,8 +20,13 @@ class APIConnector(BaseConnector):
     def __init__(self, config: APIConfig):
         self.config = config
 
-    def extract(self) -> Iterator[dict]:
+    def extract(self, table: TableConfig) -> Iterator[dict]:
         """Extract records from the configured API endpoint.
+
+        Args:
+            table: Configuration of the table being ingested. Accepted to
+                honour the connector interface, but not used to build the
+                request: the endpoint is fully defined by APIConfig.
 
         Yields:
             dict: Each record returned by the API.
