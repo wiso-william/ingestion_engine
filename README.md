@@ -233,6 +233,20 @@ These files are **examples only** and are **not part of the public API**. Users 
 
 ---
 
+## Tests
+
+```bash
+uv run pytest
+```
+
+The suite needs no service running: the ClickHouse client, the MariaDB driver
+and the HTTP layer are replaced by doubles, so what is under test is the
+pipeline logic rather than the databases. It covers batching, normalization,
+statement building and identifier validation, connection reuse, the mapping of
+failures, and the shipped examples.
+
+---
+
 ## Design Goals
 
 * Keep the ingestion logic independent from orchestration.
@@ -255,6 +269,7 @@ Completed
 - MariaDB connector
 - REST API connector
 - Structured logging
+- Test suite
 ```
 
 ## License
