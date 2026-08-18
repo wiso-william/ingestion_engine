@@ -15,6 +15,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy>=2.3.1",
     "pytest>=8.0.0",
     "ruff>=0.16.3",
 ]
@@ -22,6 +23,26 @@ dev = [
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]
 build-backend = "uv_build"
+
+[tool.mypy]
+strict = true
+files = ["src", "examples", "tests"]
+mypy_path = "src"
+explicit_package_bases = true
+
+# The mariadb driver ships neither annotations nor a py.typed marker, so its
+# module is opaque to the checker. Everything the project does with it stays
+# checked; only the driver's own signatures are unknown.
+[[tool.mypy.overrides]]
+module = ["mariadb"]
+ignore_missing_imports = true
+
+# Test functions are identified by their name, not their signature, so they are
+# exempt from the annotation requirement. This mirrors the ruff per-file-ignore.
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 
 [tool.ruff.lint]
 select = [

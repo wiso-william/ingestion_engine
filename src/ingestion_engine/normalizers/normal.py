@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+from typing import Any
 
 from ingestion_engine.normalizers.base import BaseNormalizer
 from ingestion_engine.schema.table import TableConfig
@@ -7,7 +8,9 @@ from ingestion_engine.schema.table import TableConfig
 class DictNormalizer(BaseNormalizer):
     """Normalizer converting dictionary records into tuples."""
 
-    def normalize(self, records: Iterator[dict], table: TableConfig) -> Iterator[tuple]:
+    def normalize(
+        self, records: Iterator[dict[str, Any]], table: TableConfig
+    ) -> Iterator[tuple[Any, ...]]:
         """Convert records into tuples following the configured column order.
 
         Each value is looked up by walking the column source_address, whose

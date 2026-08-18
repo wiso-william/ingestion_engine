@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Iterator
+from typing import Any
 
 import requests
 
@@ -20,7 +21,7 @@ class APIConnector(BaseConnector):
     def __init__(self, config: APIConfig) -> None:
         self.config = config
 
-    def extract(self, table: TableConfig) -> Iterator[dict]:
+    def extract(self, table: TableConfig) -> Iterator[dict[str, Any]]:
         """Extract records from the configured API endpoint.
 
         Args:

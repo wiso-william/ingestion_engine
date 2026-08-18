@@ -1,13 +1,14 @@
 import logging
 from collections.abc import Iterable, Iterator
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
 def batcher(
-    rows: Iterable[tuple],
+    rows: Iterable[tuple[Any, ...]],
     batch_size: int,
-) -> Iterator[list[tuple]]:
+) -> Iterator[list[tuple[Any, ...]]]:
     """Group rows into batches of fixed size.
 
     Rows are consumed lazily, so only one batch at a time is kept in memory.
@@ -21,7 +22,7 @@ def batcher(
             batch_size.
     """
 
-    batch: list[tuple] = []
+    batch: list[tuple[Any, ...]] = []
 
     logger.debug(f"Starting batcher with batch size {batch_size}")
 

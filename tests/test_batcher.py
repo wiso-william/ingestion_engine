@@ -1,9 +1,12 @@
 """Tests for the batcher, which groups normalized rows before loading."""
 
+from collections.abc import Iterator
+from typing import Any
+
 from ingestion_engine.batchers.batcher import batcher
 
 
-def rows(count: int) -> list[tuple]:
+def rows(count: int) -> list[tuple[Any, ...]]:
     return [(i,) for i in range(count)]
 
 
@@ -41,7 +44,7 @@ def test_reads_only_what_the_current_batch_needs():
 
     consumed = 0
 
-    def source():
+    def source() -> Iterator[tuple[Any, ...]]:
         nonlocal consumed
         for row in rows(100):
             consumed += 1

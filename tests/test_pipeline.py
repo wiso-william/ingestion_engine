@@ -5,23 +5,43 @@ what talks to the outside world, so these tests cover the actual interaction
 between the stages.
 """
 
+from collections.abc import Iterable, Iterator, Sequence
+from typing import Any, Protocol
+
 import pytest
 
-from ingestion_engine import BaseConnector, BaseLoader, DictNormalizer, run
+from ingestion_engine import (
+    BaseConnector,
+    BaseLoader,
+    DictNormalizer,
+    TableConfig,
+    run,
+)
+
+
+class ConsumptionProbe(Protocol):
+    """Anything that counts how much of a source has been pulled."""
+
+    consumed: int
 
 
 class RecordingLoader(BaseLoader):
     """A loader that records the calls it receives instead of writing."""
 
-    def __init__(self, probe=None, create_error=None, load_error=None):
+    def __init__(
+        self,
+        probe: ConsumptionProbe | None = None,
+        create_error: Exception | None = None,
+        load_error: Exception | None = None,
+    ) -> None:
         self.probe = probe
         self.create_error = create_error
         self.load_error = load_error
         self.created: list[str] = []
-        self.batches: list[list[tuple]] = []
-        self.records_read_at_create = None
+        self.batches: list[list[tuple[Any, ...]]] = []
+        self.records_read_at_create: int | None = None
 
-    def create_table(self, table) -> None:
+    def create_table(self, table: TableConfig) -> None:
         if self.probe is not None:
             self.records_read_at_create = self.probe.consumed
 
@@ -30,26 +50,26 @@ class RecordingLoader(BaseLoader):
 
         self.created.append(table.name)
 
-    def load(self, table, rows) -> None:
+    def load(self, table: TableConfig, rows: Sequence[tuple[Any, ...]]) -> None:
         if self.load_error is not None:
             raise self.load_error
 
         self.batches.append(list(rows))
 
     @property
-    def rows(self) -> list[tuple]:
+    def rows(self) -> list[tuple[Any, ...]]:
         return [row for batch in self.batches for row in batch]
 
 
 class SourceConnector(BaseConnector):
-    def __init__(self, source):
+    def __init__(self, source: Iterable[dict[str, Any]]) -> None:
         self.source = source
 
-    def extract(self, table):
+    def extract(self, table: TableConfig) -> Iterator[dict[str, Any]]:
         return iter(self.source)
 
 
-def build_records(count: int) -> list[dict]:
+def build_records(count: int) -> list[dict[str, Any]]:
     return [{"id": i, "meta": {"label": str(i)}} for i in range(count)]
 
 

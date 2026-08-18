@@ -1,11 +1,12 @@
 """Tests for APIConnector, including how it maps HTTP failures."""
 
 import re
+from typing import Any
 
 import pytest
 import requests
 
-from ingestion_engine import APIConfig, APIConnector
+from ingestion_engine import APIConfig, APIConnector, TableConfig
 
 URL = "https://example.com/records"
 PAYLOAD = [{"id": 1, "name": "first"}, {"id": 2, "name": "second"}]
@@ -30,7 +31,7 @@ class FakeResponse:
 def spy_get(monkeypatch: pytest.MonkeyPatch):
     """Replace requests.get with a spy recording how it was called."""
 
-    calls: list[dict] = []
+    calls: list[dict[str, Any]] = []
 
     def install(response=None, error: Exception | None = None):
         def fake_get(url, **kwargs):
@@ -48,12 +49,12 @@ def spy_get(monkeypatch: pytest.MonkeyPatch):
     return install
 
 
-def extract(config: APIConfig, table) -> list[dict]:
+def extract(config: APIConfig, table: TableConfig) -> list[dict[str, Any]]:
     return list(APIConnector(config).extract(table))
 
 
 def build_config(**overrides) -> APIConfig:
-    settings = {"url": URL, "headers": {}, "params": {}}
+    settings: dict[str, Any] = {"url": URL, "headers": {}, "params": {}}
     settings.update(overrides)
 
     return APIConfig(**settings)

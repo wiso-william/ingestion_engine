@@ -7,6 +7,7 @@ lifecycle, since it is the part callers never see and therefore never check.
 
 import contextlib
 import gc
+from typing import Any
 
 import pytest
 
@@ -19,7 +20,7 @@ from ingestion_engine import (
 
 
 def build_loader(**overrides) -> ClickHouseLoader:
-    settings = {
+    settings: dict[str, Any] = {
         "host": "localhost",
         "port": 8124,
         "user": "root",

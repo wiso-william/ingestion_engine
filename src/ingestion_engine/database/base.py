@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Sequence
+from typing import Any
 
 from ingestion_engine.schema.table import TableConfig
 
@@ -24,7 +25,7 @@ class BaseLoader(ABC):
     def load(
         self,
         table: TableConfig,
-        rows: Iterable[tuple],
+        rows: Sequence[tuple[Any, ...]],
     ) -> None:
         """Insert normalized rows into the destination table.
 

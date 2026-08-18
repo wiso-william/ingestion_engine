@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
+from typing import Any
 
 from ingestion_engine.schema.table import TableConfig
 
@@ -13,7 +14,9 @@ class BaseNormalizer(ABC):
     """
 
     @abstractmethod
-    def normalize(self, records: Iterator[dict], table: TableConfig) -> Iterator[tuple]:
+    def normalize(
+        self, records: Iterator[dict[str, Any]], table: TableConfig
+    ) -> Iterator[tuple[Any, ...]]:
         """Normalize source records according to the table configuration.
 
         Args:

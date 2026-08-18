@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Iterator
+from typing import Any
 
 import mariadb
 
@@ -47,7 +48,7 @@ class MariaDBConnector(BaseConnector):
         self,
         table: TableConfig,
         fetch_size: int = 5000,
-    ) -> Iterator[dict]:
+    ) -> Iterator[dict[str, Any]]:
         """Extract records from a MariaDB table in batches.
 
         Args:

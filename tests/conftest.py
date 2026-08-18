@@ -5,7 +5,8 @@ for the ClickHouse client, the MariaDB driver and the HTTP layer, so the suite
 runs anywhere with no service to start.
 """
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
 
@@ -34,13 +35,17 @@ class FakeClickHouseClient:
         self.number = number
         self.insert_error = insert_error
         self.commands: list[str] = []
-        self.inserts: list[tuple[str, list[tuple]]] = []
+        self.inserts: list[tuple[str | None, list[tuple[Any, ...]]]] = []
         self.closed = False
 
     def command(self, sql: str) -> None:
         self.commands.append(sql)
 
-    def insert(self, table: str | None = None, data=None) -> None:
+    def insert(
+        self,
+        table: str | None = None,
+        data: Any = None,
+    ) -> None:
         if self.insert_error is not None:
             raise self.insert_error
 
@@ -62,9 +67,9 @@ class ClientFactory:
     def __init__(self, insert_errors: list[Exception | None] | None = None):
         self.clients: list[FakeClickHouseClient] = []
         self._insert_errors = list(insert_errors or [])
-        self.kwargs: list[dict] = []
+        self.kwargs: list[dict[str, Any]] = []
 
-    def __call__(self, **kwargs) -> FakeClickHouseClient:
+    def __call__(self, **kwargs: Any) -> FakeClickHouseClient:
         self.kwargs.append(kwargs)
 
         error = self._insert_errors.pop(0) if self._insert_errors else None
@@ -87,7 +92,9 @@ class ClientFactory:
 
 
 @pytest.fixture
-def patch_client_factory(monkeypatch: pytest.MonkeyPatch):
+def patch_client_factory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Callable[..., ClientFactory]:
     """Install a double in place of the ClickHouse client factory.
 
     Returns:
@@ -105,7 +112,9 @@ def patch_client_factory(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def client_factory(patch_client_factory) -> ClientFactory:
+def client_factory(
+    patch_client_factory: Callable[..., ClientFactory],
+) -> ClientFactory:
     """A ClickHouse client factory double whose clients always succeed."""
 
     return patch_client_factory()
@@ -117,11 +126,11 @@ class CountingSource:
     Used to prove that extraction and normalization stay lazy.
     """
 
-    def __init__(self, records: list[dict]):
+    def __init__(self, records: list[dict[str, Any]]):
         self.records = records
         self.consumed = 0
 
-    def __iter__(self) -> Iterator[dict]:
+    def __iter__(self) -> Iterator[dict[str, Any]]:
         for record in self.records:
             self.consumed += 1
             yield record

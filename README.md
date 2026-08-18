@@ -18,7 +18,8 @@ The project is built around a modular architecture that cleanly separates extrac
 * Configurable table schemas
 * Batch processing
 * Structured logging with automatic log rotation
-* Type-safe configuration using dataclasses
+* Type-safe configuration using dataclasses, checked with mypy in `strict` mode
+* Annotations exported to consumers through a `py.typed` marker
 * Public API designed through `__init__.py`
 * Easy integration with orchestration frameworks such as Apache Airflow
 
@@ -256,7 +257,7 @@ pipeline logic rather than the databases. It covers batching, normalization,
 statement building and identifier validation, connection reuse, the mapping of
 failures, and the shipped examples.
 
-Linting and formatting are handled by ruff, configured in `pyproject.toml`:
+Linting, formatting and type checking are configured in `pyproject.toml`:
 
 ```bash
 uv run ruff check .
@@ -266,10 +267,21 @@ uv run ruff check .
 uv run ruff format --check .
 ```
 
+```bash
+uv run mypy
+```
+
+mypy runs in `strict` mode over `src`, `examples` and `tests`. Test functions
+are exempt from the annotation requirement, since they are identified by their
+name rather than their signature, but the doubles they use are not.
+
+The package ships a `py.typed` marker, so these annotations are not only checked
+here: they are honoured by the type checker of anyone who installs the package.
+
 CI runs all of it on every push and pull request: the suite across Python 3.10
-to 3.13, the two ruff checks above, a lockfile check and a package build. The
-ruff version comes from the lockfile, so a new release cannot break the build
-on its own.
+to 3.13, the ruff checks, mypy, a lockfile check and a package build. The ruff
+and mypy versions come from the lockfile, so a new release of either cannot
+break the build on its own.
 
 ---
 
@@ -361,6 +373,7 @@ Completed
 - Test suite
 - Continuous integration
 - Linting with ruff
+- Static type checking with mypy
 ```
 
 ## License

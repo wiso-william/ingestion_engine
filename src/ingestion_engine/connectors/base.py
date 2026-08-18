@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
+from typing import Any
 
 from ingestion_engine.schema.table import TableConfig
 
@@ -17,13 +18,14 @@ class BaseConnector(ABC):
     """
 
     @abstractmethod
-    def extract(self, table: TableConfig) -> Iterator[dict]:
+    def extract(self, table: TableConfig) -> Iterator[dict[str, Any]]:
         """Extract records from the source system.
 
         Args:
             table: Configuration defining the records to extract.
 
         Returns:
-            Iterator[dict]: An iterator yielding records from the source system.
+            Iterator[dict[str, Any]]: An iterator yielding records from the
+                source system.
         """
         ...

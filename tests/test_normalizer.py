@@ -1,11 +1,15 @@
 """Tests for DictNormalizer, which reshapes source records into rows."""
 
+from typing import Any
+
 import pytest
 
 from ingestion_engine import Column, DictNormalizer, TableConfig
 
 
-def normalize(table: TableConfig, records: list[dict]) -> list[tuple]:
+def normalize(
+    table: TableConfig, records: list[dict[str, Any]]
+) -> list[tuple[Any, ...]]:
     return list(DictNormalizer().normalize(iter(records), table))
 
 

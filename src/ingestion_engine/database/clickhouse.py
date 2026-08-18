@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 import weakref
-from collections.abc import Iterable
+from collections.abc import Sequence
+from typing import Any
 
 import clickhouse_connect
 from clickhouse_connect.driver import Client
@@ -31,7 +32,7 @@ class ClickHouseLoader(BaseLoader):
     def __init__(self, config: ClickHouseConfig) -> None:
         self.config = config
         self._client: Client | None = None
-        self._finalizer: weakref.finalize | None = None
+        self._finalizer: weakref.finalize[[Client], ClickHouseLoader] | None = None
 
     @staticmethod
     def _close_client(client: Client) -> None:
@@ -132,7 +133,7 @@ class ClickHouseLoader(BaseLoader):
     def load(
         self,
         table: TableConfig,
-        rows: Iterable[tuple],
+        rows: Sequence[tuple[Any, ...]],
     ) -> None:
         """Insert normalized rows into an existing ClickHouse table.
 

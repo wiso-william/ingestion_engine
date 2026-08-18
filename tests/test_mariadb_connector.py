@@ -4,6 +4,8 @@ The mariadb driver is replaced wholesale, so these tests run without a server
 and without the MariaDB Connector/C the real driver builds against.
 """
 
+from typing import Any
+
 import pytest
 
 from ingestion_engine import MariaDBConfig, MariaDBConnector
@@ -15,7 +17,12 @@ class FakeError(Exception):
 
 
 class FakeCursor:
-    def __init__(self, rows: list[tuple], columns: list[str], error=None):
+    def __init__(
+        self,
+        rows: list[tuple[Any, ...]],
+        columns: list[str],
+        error: Exception | None = None,
+    ) -> None:
         self.description = [(name,) for name in columns]
         self._rows = list(rows)
         self._error = error
@@ -29,7 +36,7 @@ class FakeCursor:
 
         self.executed.append(query)
 
-    def fetchmany(self, size: int) -> list[tuple]:
+    def fetchmany(self, size: int) -> list[tuple[Any, ...]]:
         self.fetch_sizes.append(size)
 
         batch = self._rows[:size]
@@ -57,7 +64,7 @@ class FakeConnection:
 def fake_driver(monkeypatch: pytest.MonkeyPatch):
     """Install a fake mariadb module and expose what it was asked to do."""
 
-    state: dict = {}
+    state: dict[str, Any] = {}
 
     def install(rows=None, columns=None, execute_error=None):
         cursor = FakeCursor(
@@ -85,7 +92,7 @@ def fake_driver(monkeypatch: pytest.MonkeyPatch):
 
 
 def build_config(**overrides) -> MariaDBConfig:
-    settings = {
+    settings: dict[str, Any] = {
         "host": "db.internal",
         "user": "reader",
         "password": "secret",
