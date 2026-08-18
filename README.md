@@ -1,5 +1,7 @@
 # Ingestion Engine
 
+[![CI](https://github.com/wiso-william/ingestion_engine/actions/workflows/ci.yml/badge.svg)](https://github.com/wiso-william/ingestion_engine/actions/workflows/ci.yml)
+
 *A lightweight and extensible Python ingestion framework designed to extract data from multiple sources, normalize them into a common format, and load them into analytical databases.*
 
 The project is built around a modular architecture that cleanly separates extraction, normalization, batching, and loading. It is designed as an installable Python package with a simple public API, making it easy to extend with new connectors, normalizers, and loaders.
@@ -28,8 +30,15 @@ The project is built around a modular architecture that cleanly separates extrac
 * [uv](https://docs.astral.sh/uv/)
 * Docker, to run the ClickHouse the examples load into
 
-The MariaDB connector additionally needs MariaDB Connector/C installed on the
-system. The API example does not, so it stays runnable everywhere.
+The MariaDB connector additionally needs MariaDB Connector/C on the system,
+since the `mariadb` driver ships wheels for Windows only and is built from
+source everywhere else. On Debian and Ubuntu:
+
+```bash
+sudo apt-get install libmariadb-dev
+```
+
+The API example does not need it, so it stays runnable everywhere.
 
 ---
 
@@ -245,6 +254,9 @@ pipeline logic rather than the databases. It covers batching, normalization,
 statement building and identifier validation, connection reuse, the mapping of
 failures, and the shipped examples.
 
+The same suite runs in CI on every push and pull request, across Python 3.10 to
+3.13, together with a lockfile check and a package build.
+
 ---
 
 ## Design Goals
@@ -270,6 +282,7 @@ Completed
 - REST API connector
 - Structured logging
 - Test suite
+- Continuous integration
 ```
 
 ## License

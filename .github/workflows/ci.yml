@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    env:
+      UV_PYTHON: ${{ matrix.python-version }}
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # The mariadb driver publishes wheels for Windows only, so on Linux it is
+      # built from its sdist and needs the MariaDB Connector/C headers.
+      - name: Install MariaDB Connector/C
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libmariadb-dev
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install the project
+        run: uv sync --locked
+
+      - name: Run the test suite
+        run: uv run pytest
+
+  package:
+    name: Lockfile and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Check that the lockfile matches pyproject.toml
+        run: uv lock --check
+
+      - name: Build the source distribution and the wheel
+        run: uv build
