@@ -47,6 +47,7 @@ class APIConnector(BaseConnector):
                 self.config.url,
                 headers=self.config.headers,
                 params=self.config.params,
+                timeout=self.config.timeout,
             )
 
             response.raise_for_status()
@@ -68,8 +69,10 @@ class APIConnector(BaseConnector):
 
         except requests.exceptions.Timeout:
             logger.exception(
-                "Request to %s timed out",
+                "Request to %s timed out (connect=%.1fs, read=%.1fs)",
                 self.config.url,
+                self.config.connect_timeout,
+                self.config.read_timeout,
             )
             raise
 
