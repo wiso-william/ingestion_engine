@@ -256,9 +256,6 @@ pipeline logic rather than the databases. It covers batching, normalization,
 statement building and identifier validation, connection reuse, the mapping of
 failures, and the shipped examples.
 
-The same suite runs in CI on every push and pull request, across Python 3.10 to
-3.13, together with a lockfile check and a package build.
-
 Linting and formatting are handled by ruff, configured in `pyproject.toml`:
 
 ```bash
@@ -268,6 +265,11 @@ uv run ruff check .
 ```bash
 uv run ruff format --check .
 ```
+
+CI runs all of it on every push and pull request: the suite across Python 3.10
+to 3.13, the two ruff checks above, a lockfile check and a package build. The
+ruff version comes from the lockfile, so a new release cannot break the build
+on its own.
 
 ---
 

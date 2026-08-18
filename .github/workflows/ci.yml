@@ -45,6 +45,31 @@ jobs:
       - name: Run the test suite
         run: uv run pytest
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # Only the dev group is installed, so this job needs neither the project
+      # nor MariaDB Connector/C. The ruff version comes from the lockfile, so a
+      # new ruff release cannot turn this job red on its own.
+      - name: Install the linter
+        run: uv sync --locked --only-group dev
+
+      - name: Check for lint errors
+        run: uv run --no-sync ruff check .
+
+      - name: Check the formatting
+        run: uv run --no-sync ruff format --check .
+
   package:
     name: Lockfile and build
     runs-on: ubuntu-latest
