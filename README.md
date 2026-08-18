@@ -236,9 +236,9 @@ The `examples/` directory contains runnable pipelines and the table definitions 
 Run them as modules from the repository root, e.g.
 `uv run python -m examples.run_api_pipeline`.
 
-A column type must match the type the source actually returns: the framework
-normalizes the *shape* of a record, it does not cast its values. This is why
-`users.py` declares the API's `geo.lat` as `String` and not as `Float64`.
+Note that `users.py` declares the API's `geo.lat` as `String` and not as
+`Float64`: the endpoint returns it as a JSON string, and types are declared
+rather than converted. See Limitations.
 
 These files are **examples only** and are **not part of the public API**. Users are expected to define their own table configurations in their own projects.
 
@@ -279,6 +279,69 @@ on its own.
 * Make connectors, loaders, and normalizers easily replaceable.
 * Provide a clean and stable public API.
 * Support orchestration tools without coupling business logic to them.
+
+---
+
+## Limitations
+
+These are deliberate boundaries rather than missing pieces. Each one is a
+decision about what belongs in an ingestion tool and what belongs downstream.
+
+### Full refresh only
+
+`build_ddl` generates a `CREATE OR REPLACE TABLE`, so every run rebuilds the
+destination table and discards the rows it held. There is no incremental load,
+no change data capture and no upsert.
+
+What this buys is a run that is idempotent and keeps no state: it either
+rebuilds the table or fails, and there is never a partial result to reason
+about. Incremental loading needs watermarks, deletion handling and somewhere to
+keep them, which is a different tool rather than a flag on this one.
+
+### Types are declared, not converted
+
+A column's type describes the destination column: it is what goes into the
+`CREATE TABLE`. The value arriving from the source must already be of a type the
+destination accepts. The normalizer resolves the *shape* of a record, walking
+`source_address` into nested keys, and never casts a value.
+
+Declaring `Float64` for a field the source delivers as the string `"-37.3159"`
+therefore fails on insert instead of being quietly parsed. This is why
+`examples/tables/users.py` declares the API's `geo.lat` as `String`.
+
+Automatic conversion driven by the declared type was designed and then
+deliberately rejected, for four reasons:
+
+* **It would be the one implicit thing in an explicit schema.** Columns are
+  declared by hand precisely so that nothing is inferred or hidden. Parsing a
+  string into a number *because* the column happens to say `Float64` puts back
+  the implicitness the explicit declaration exists to remove.
+* **Changing a value's type is transformation, not ingestion.** The same
+  reasoning that keeps `Nullable(String)` cleanup out of this stage keeps string
+  parsing out of it. Ingestion loads the source faithfully; staging reshapes it.
+* **It would almost never be reached.** A SQL driver already returns typed
+  objects: MariaDB Connector/Python returns `int` for `INT`, `Decimal` for
+  `DECIMAL` and `datetime` for `DATETIME`, so a database source never presents
+  the problem. Only loosely typed sources do, JSON above all, where a number can
+  arrive as text.
+* **Conversions that lose information have to fail, and they already do.** The
+  ClickHouse driver rejects `3.7` for a `UInt8` column, `130` for `Int8` and
+  `256` for `UInt8`. A cast placed in front of it could only weaken that
+  guarantee, never strengthen it.
+
+Declare the type the source actually delivers, and convert in staging.
+
+### One table per run
+
+`run` ingests a single `TableConfig`. Loading several tables, in whatever order
+and with whatever parallelism, is left to the caller, for the reason given under
+Design Goals: orchestration stays outside the framework.
+
+### No retries
+
+A failed request or a dropped connection fails the pipeline. Retrying, backing
+off and alerting belong to whatever schedules the run, so the framework stays
+out of them.
 
 ---
 
