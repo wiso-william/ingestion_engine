@@ -22,48 +22,86 @@ The project is built around a modular architecture that cleanly separates extrac
 
 ---
 
-## Installation
+## Requirements
 
-Clone the repository and install the project in editable mode.
+* Python 3.10 or newer
+* [uv](https://docs.astral.sh/uv/)
+* Docker, to run the ClickHouse the examples load into
 
-```bash
-uv sync
-```
-
-or
-
-```bash
-uv pip install -e .
-```
+The MariaDB connector additionally needs MariaDB Connector/C installed on the
+system. The API example does not, so it stays runnable everywhere.
 
 ---
 
 ## Quick Start
 
+The API example runs with no configuration. Start the destination database:
+
+```bash
+docker compose up -d
+```
+
+Install the project and run the pipeline from the repository root:
+
+```bash
+uv sync
+```
+
+```bash
+uv run python -m examples.run_api_pipeline
+```
+
+It extracts the users of a public REST API, loads them into ClickHouse and
+reports what landed there:
+
+```text
+... | INFO | ingestion_engine.process_data.pipeline | Starting data ingestion pipeline for table users
+... | INFO | ingestion_engine.database.clickhouse   | Creating table users
+... | INFO | ingestion_engine.connectors.api        | Extraction started, requesting data from https://jsonplaceholder.typicode.com/users
+... | INFO | ingestion_engine.process_data.pipeline | Loading batch 1 with 10 rows into ClickHouse
+... | INFO | examples.run_api_pipeline              | Table users now holds 10 rows
+```
+
+Rerunning it is safe: the destination table is replaced on every run.
+
+---
+
+## Usage
+
+A pipeline is assembled from a connector, a normalizer, a loader and a table
+configuration, then handed to `run`:
+
 ```python
 from ingestion_engine import (
-    MariaDBConfig,
+    APIConfig,
+    APIConnector,
     ClickHouseConfig,
-    MariaDBConnector,
     ClickHouseLoader,
     DictNormalizer,
     run,
 )
 
-from tables.my_table import my_table
+from my_tables import my_table
 
-connector = MariaDBConnector(mariadb_config)
-loader = ClickHouseLoader(clickhouse_config)
-normalizer = DictNormalizer()
+clickhouse_config = ClickHouseConfig(
+    host="localhost",
+    port=8124,
+    user="root",
+    password="root",
+    database="ingestion",
+)
 
 run(
-    connector=connector,
-    loader=loader,
-    normalizer=normalizer,
+    connector=APIConnector(APIConfig(url="https://example.com/records", headers={}, params={})),
+    normalizer=DictNormalizer(),
+    loader=ClickHouseLoader(clickhouse_config),
     table=my_table,
     batch_size=10000,
 )
 ```
+
+Swapping the source means swapping the connector: nothing else in the pipeline
+changes.
 
 ---
 
@@ -72,20 +110,24 @@ run(
 ```text
 ingestion_engine/
 ├── examples/
-├── scripts/
+│   ├── tables/
+│   │   ├── product_categories.py
+│   │   └── users.py
+│   ├── run_api_pipeline.py
+│   └── run_mariadb_pipeline.py
 ├── src/
 │   └── ingestion_engine/
 │       ├── batchers/
 │       ├── config/
 │       ├── connectors/
 │       ├── database/
-│       ├── log_config/
 │       ├── normalizers/
 │       ├── process_data/
 │       ├── schema/
 │       ├── sql_builder/
 │       └── __init__.py
 ├── tests/
+├── docker-compose.yml
 ├── pyproject.toml
 └── README.md
 ```
@@ -173,7 +215,19 @@ making the framework suitable for both local execution and orchestration environ
 
 ## Examples
 
-The `examples/` directory contains sample pipelines and table definitions demonstrating how to use the framework.
+The `examples/` directory contains runnable pipelines and the table definitions they use.
+
+| Example | Needs | Notes |
+| --- | --- | --- |
+| `run_api_pipeline.py` | only `docker compose up -d` | Public REST API to ClickHouse. Start here. |
+| `run_mariadb_pipeline.py` | a reachable MariaDB, `.env` filled in | Shows the second connector. Also needs MariaDB Connector/C on the system. |
+
+Run them as modules from the repository root, e.g.
+`uv run python -m examples.run_api_pipeline`.
+
+A column type must match the type the source actually returns: the framework
+normalizes the *shape* of a record, it does not cast its values. This is why
+`users.py` declares the API's `geo.lat` as `String` and not as `Float64`.
 
 These files are **examples only** and are **not part of the public API**. Users are expected to define their own table configurations in their own projects.
 
