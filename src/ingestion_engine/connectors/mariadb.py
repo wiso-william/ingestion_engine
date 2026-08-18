@@ -29,13 +29,15 @@ class MariaDBConnector(BaseConnector):
         """
 
         logger.info(
-            "Connecting to MariaDB (%s/%s)",
+            "Connecting to MariaDB (%s:%d/%s)",
             self.config.host,
+            self.config.port,
             self.config.database,
         )
 
         return mariadb.connect(
             host=self.config.host,
+            port=self.config.port,
             user=self.config.user,
             password=self.config.password,
             database=self.config.database,

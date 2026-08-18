@@ -1,46 +1,101 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
-import logging 
+import logging
+import weakref
 
 import clickhouse_connect
+from clickhouse_connect.driver import Client
 
 from ingestion_engine.config.clickhouse import ClickHouseConfig
 from ingestion_engine.sql_builder.query_builder import QueryBuilder
 from ingestion_engine.schema.table import TableConfig
 from ingestion_engine.database.base import BaseLoader
 
-    
+
 logger = logging.getLogger(__name__)
 
 
 class ClickHouseLoader(BaseLoader):
     """Loader creating and filling tables on a ClickHouse server.
 
-    Every operation opens its own client and closes it afterwards, so the
-    loader holds no connection between calls.
+    The connection is opened by the first operation and reused by the ones
+    that follow, so loading a table costs a single connection no matter how
+    many batches it takes. Callers do not have to manage it: close() releases
+    it explicitly, and it is released anyway once the loader is garbage
+    collected or the interpreter exits.
+
+    A failing operation drops the connection before raising, so a loader whose
+    connection broke reconnects on the next call instead of staying unusable.
     """
 
     def __init__(self, config: ClickHouseConfig):
         self.config = config
+        self._client: Client | None = None
+        self._finalizer: weakref.finalize | None = None
 
-    def __get_client(self):
-        """Create a client connected to the configured ClickHouse database.
+    @staticmethod
+    def _close_client(client: Client) -> None:
+        """Close a client.
 
-        Returns:
-            clickhouse_connect.driver.Client: A client connected to the
-                configured database.
+        Kept static so that the finalizer holds no reference to the loader,
+        which would stop the loader from ever being garbage collected.
+
+        Args:
+            client: The client to close.
         """
 
-        logger.info("Connecting to ClickHouse (%s/%s)", 
-                    self.config.host, 
-                    self.config.database)
+        client.close()
 
-        return clickhouse_connect.get_client(
+        logger.debug("ClickHouse client closed")
+
+    def _get_client(self) -> Client:
+        """Return the client every operation runs on, connecting if needed.
+
+        The client is created on the first call and cached, so the following
+        calls reuse the same connection.
+
+        Returns:
+            Client: A client connected to the configured database.
+        """
+
+        if self._client is not None:
+            return self._client
+
+        logger.info(
+            "Connecting to ClickHouse (%s/%s)",
+            self.config.host,
+            self.config.database,
+        )
+
+        self._client = clickhouse_connect.get_client(
             host=self.config.host,
             port=self.config.port,
             username=self.config.user,
             password=self.config.password,
             database=self.config.database,
-    )
+        )
+
+        self._finalizer = weakref.finalize(
+            self,
+            self._close_client,
+            self._client,
+        )
+
+        return self._client
+
+    def close(self) -> None:
+        """Close the connection, if one is open.
+
+        Safe to call more than once and safe to call on a loader that never
+        connected: the following calls do nothing.
+        """
+
+        if self._finalizer is not None:
+            self._finalizer()
+            self._finalizer = None
+
+        self._client = None
 
     def create_table(self, table: TableConfig) -> None:
         """Create the destination table described by the configuration.
@@ -55,10 +110,8 @@ class ClickHouseLoader(BaseLoader):
             Exception: If the DDL execution fails.
         """
 
-        client = None
-
         try:
-            client = self.__get_client()
+            client = self._get_client()
 
             ddl = QueryBuilder.build_ddl(table)
 
@@ -74,13 +127,8 @@ class ClickHouseLoader(BaseLoader):
                 "Failed to create table %s",
                 table.name,
             )
+            self.close()
             raise
-
-        finally:
-            if client is not None:
-                client.close()
-
-            logger.debug("ClickHouse client closed")
 
     def load(
         self,
@@ -97,10 +145,8 @@ class ClickHouseLoader(BaseLoader):
             Exception: If the insert fails.
         """
 
-        client = None
-
         try:
-            client = self.__get_client()
+            client = self._get_client()
 
             logger.debug("Loading data into %s", table.name)
 
@@ -116,10 +162,5 @@ class ClickHouseLoader(BaseLoader):
                 "Failed inserting data into %s",
                 table.name,
             )
+            self.close()
             raise
-
-        finally:
-            if client is not None:
-                client.close()
-
-            logger.debug("ClickHouse client closed")

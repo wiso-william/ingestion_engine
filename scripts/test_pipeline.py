@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import os
 
 
-from examples.tables.esami_categorie import esami_categorie
+from examples.tables.product_categories import product_categories
 from ingestion_engine import (
     ClickHouseConfig, 
     ClickHouseLoader,
@@ -21,6 +21,7 @@ BATCH_SIZE = 10000
 
 mariadb_config = MariaDBConfig(
     host=os.getenv("MARIADB_HOST"),
+    port=int(os.getenv("MARIADB_PORT", "3306")),
     user=os.getenv("MARIADB_USER"),
     password=os.getenv("MARIADB_PASSWORD"),
     database=os.getenv("MARIADB_DATABASE")
@@ -43,5 +44,5 @@ run(
     normalizer=normalizer,
     loader=loader,
     batch_size=BATCH_SIZE,
-    table=esami_categorie,
+    table=product_categories,
 )
