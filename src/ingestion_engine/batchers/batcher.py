@@ -24,16 +24,16 @@ def batcher(
 
     batch: list[tuple[Any, ...]] = []
 
-    logger.debug(f"Starting batcher with batch size {batch_size}")
+    logger.debug("Starting batcher with batch size %d", batch_size)
 
     for row in rows:
         batch.append(row)
 
         if len(batch) == batch_size:
-            logger.debug(f"Yielding batch of size {batch_size}")
+            logger.debug("Yielding batch of size %d", batch_size)
             yield batch
             batch = []
 
     if batch:
-        logger.debug(f"Yielding final batch of size {len(batch)}")
+        logger.debug("Yielding final batch of size %d", len(batch))
         yield batch
