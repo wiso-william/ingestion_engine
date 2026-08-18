@@ -57,17 +57,18 @@ class TestExampleTables:
 
 
 class TestUsersTable:
-    def test_the_api_coordinates_are_declared_as_strings(self):
+    def test_the_api_coordinates_are_declared_as_floats(self):
         """jsonplaceholder returns geo.lat and geo.lng as JSON strings.
 
-        The framework does not cast values, so declaring them numeric makes the
-        demo fail on the insert. This pins the fix in place.
+        Declaring them numeric is still correct: the driver parses a numeric
+        string into the declared numeric type, so the destination ends up
+        holding real floats rather than text.
         """
 
         types = {column.name: column.type for column in users.columns}
 
-        assert types["lat"] == "String"
-        assert types["lng"] == "String"
+        assert types["lat"] == "Float64"
+        assert types["lng"] == "Float64"
 
     def test_nested_fields_are_addressed_with_dots(self):
         addresses = {column.source_address for column in users.columns}
