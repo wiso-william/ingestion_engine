@@ -1,14 +1,19 @@
 [project]
 name = "ingestion-engine"
 version = "0.1.0"
-description = "Add your description here"
+description = "Extensible ETL framework that extracts records from SQL and REST sources, normalizes them, and loads them into analytical databases."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "clickhouse-connect>=1.5.0",
-    "dotenv>=0.9.9",
     "mariadb>=1.1.14",
+    "python-dotenv>=1.2.2",
     "requests>=2.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
 ]
 
 [build-system]
