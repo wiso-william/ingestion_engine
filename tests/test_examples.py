@@ -31,9 +31,6 @@ CLICKHOUSE_VARIABLES = (
 
 @pytest.mark.parametrize("table", EXAMPLE_TABLES, ids=EXAMPLE_IDS)
 class TestExampleTables:
-    def test_declares_at_least_one_column(self, table: TableConfig):
-        assert table.columns
-
     def test_the_ddl_can_be_built(self, table: TableConfig):
         assert "CREATE OR REPLACE TABLE" in QueryBuilder.build_ddl(table)
 

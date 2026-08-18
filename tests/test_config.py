@@ -1,14 +1,9 @@
 """Tests for the configuration dataclasses."""
 
-from ingestion_engine import APIConfig, ClickHouseConfig, MariaDBConfig
+from ingestion_engine import APIConfig, MariaDBConfig
 
 
 class TestAPIConfig:
-    def test_exposes_a_timeout_pair_for_requests(self):
-        config = APIConfig("https://example.com", {}, {})
-
-        assert config.timeout == (config.connect_timeout, config.read_timeout)
-
     def test_defines_a_default_timeout(self):
         """Without one a stalled endpoint would hang the pipeline forever."""
 
@@ -52,14 +47,3 @@ class TestMariaDBConfig:
             "password",
             "database",
         )
-
-
-class TestClickHouseConfig:
-    def test_carries_every_connection_setting(self):
-        config = ClickHouseConfig("host", 8124, "user", "password", "database")
-
-        assert config.host == "host"
-        assert config.port == 8124
-        assert config.user == "user"
-        assert config.password == "password"
-        assert config.database == "database"

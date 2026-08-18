@@ -256,7 +256,8 @@ The suite needs no service running: the ClickHouse client, the MariaDB driver
 and the HTTP layer are replaced by doubles, so what is under test is the
 pipeline logic rather than the databases. It covers batching, normalization,
 statement building and identifier validation, connection reuse, the mapping of
-failures, and the shipped examples.
+failures, the shipped examples, and the driver conversions that Limitations
+documents.
 
 Linting, formatting and type checking are configured in `pyproject.toml`:
 
@@ -323,15 +324,23 @@ converts some mismatches and refuses others:
 | Declared type | Value coming from the source | Result |
 | --- | --- | --- |
 | `Float64`, `UInt64`, `Decimal(p, s)` | a numeric string, e.g. `"-37.3159"` | converted |
+| a float type | an integer, e.g. `3` | converted |
 | an integer type | a float, e.g. `3.7` | converted, truncated to `3` |
 | an integer type | a string that is not an integer, e.g. `"3.7"` | rejected |
 | an integer type | a value outside its range, e.g. `130` for `Int8` | rejected |
-| `Date`, `DateTime`, `DateTime64` | a string, e.g. `"2024-01-15 10:00:00"` | rejected, a `date` or `datetime` object is required |
+| `DateTime64(p)` | an ISO string, e.g. `"2024-01-15T10:00:00"` | converted |
+| `Date`, `DateTime` | a string | rejected, a `date` or `datetime` object is required |
+| `Nullable(T)` | `None` | accepted; a non-nullable column rejects it |
 | `String` | anything that is not a string | rejected |
 
 This is why `examples/tables/users.py` declares the API's `geo.lat` as `Float64`
 even though the endpoint returns it as a JSON string: the destination ends up
 holding a real float.
+
+`DateTime64` parsing strings while `Date` and `DateTime` do not is the driver's
+own inconsistency, not a choice made here. Every row of the table above is
+covered by `tests/test_driver_conversions.py`, so a change in the driver shows
+up as a failing test rather than as documentation that quietly went stale.
 
 One consequence is worth knowing before relying on it. The driver decides how to
 treat a whole column from its **first non-null value**, so the order of the rows

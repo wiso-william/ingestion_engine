@@ -67,7 +67,8 @@ def test_no_records_produce_no_rows(table):
 def test_values_are_passed_through_without_conversion():
     """The normalizer reshapes records, it does not cast values.
 
-    This is why a column type has to match what the source really returns.
+    Any conversion happens later, in the driver, and only for the mismatches it
+    chooses to resolve. See tests/test_driver_conversions.py.
     """
 
     table = TableConfig(

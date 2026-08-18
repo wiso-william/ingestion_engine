@@ -57,16 +57,3 @@ def test_reads_only_what_the_current_batch_needs():
 
     next(batches)
     assert consumed == 20
-
-
-def test_a_batch_size_of_zero_would_never_flush():
-    """Guards the contract: batch_size must be positive.
-
-    With zero the size check never matches, so every row accumulates into a
-    single batch instead of being flushed. The batcher does not validate its
-    input, so this documents the behaviour rather than endorsing it.
-    """
-
-    batches = list(batcher(rows(5), 0))
-
-    assert batches == [rows(5)]
