@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class Column:
     """Definition of a single column of the destination table.
@@ -12,5 +13,5 @@ class Column:
     """
 
     name: str
-    type: str 
+    type: str
     source_address: str

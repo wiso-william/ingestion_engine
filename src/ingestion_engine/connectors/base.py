@@ -3,6 +3,7 @@ from collections.abc import Iterator
 
 from ingestion_engine.schema.table import TableConfig
 
+
 class BaseConnector(ABC):
     """Interface implemented by every source connector.
 
@@ -16,10 +17,7 @@ class BaseConnector(ABC):
     """
 
     @abstractmethod
-    def extract(
-        self,
-        table: TableConfig
-    ) -> Iterator[dict]:
+    def extract(self, table: TableConfig) -> Iterator[dict]:
         """Extract records from the source system.
 
         Args:

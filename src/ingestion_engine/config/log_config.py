@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging.config
 from pathlib import Path
 
-
 DEFAULT_LOG_DIR = Path("logs")
 LOG_FILE_NAME = "ingestion.log"
 MAX_BYTES = 5 * 1024 * 1024
@@ -37,10 +36,7 @@ def setup_logging(
             "formatters": {
                 "default": {
                     "format": (
-                        "%(asctime)s | "
-                        "%(levelname)-8s | "
-                        "%(name)s | "
-                        "%(message)s"
+                        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
                     ),
                     "datefmt": "%Y-%m-%d %H:%M:%S",
                 }

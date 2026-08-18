@@ -143,7 +143,7 @@ class TestIdentifierValidation:
     def test_the_error_names_the_offending_value(self):
         """A configuration mistake has to be actionable from the message alone."""
 
-        with pytest.raises(ValueError) as error:
+        with pytest.raises(ValueError, match="Invalid table name") as error:
             QueryBuilder.build_ddl(build_table(name="bad name"))
 
         assert "'bad name'" in str(error.value)

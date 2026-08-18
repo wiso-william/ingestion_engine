@@ -16,11 +16,31 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
+    "ruff>=0.16.3",
 ]
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]
 build-backend = "uv_build"
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # import sorting
+    "UP",   # outdated syntax
+    "B",    # likely bugs
+    "C4",   # comprehensions
+    "SIM",  # needless complexity
+    "PT",   # pytest style
+    "ANN",  # missing annotations
+    "RUF",  # ruff specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test functions are named, not annotated: their signature is fixtures only.
+"tests/*" = ["ANN"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

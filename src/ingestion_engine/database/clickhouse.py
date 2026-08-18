@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 import logging
 import weakref
+from collections.abc import Iterable
 
 import clickhouse_connect
 from clickhouse_connect.driver import Client
 
 from ingestion_engine.config.clickhouse import ClickHouseConfig
-from ingestion_engine.sql_builder.query_builder import QueryBuilder
-from ingestion_engine.schema.table import TableConfig
 from ingestion_engine.database.base import BaseLoader
-
+from ingestion_engine.schema.table import TableConfig
+from ingestion_engine.sql_builder.query_builder import QueryBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ class ClickHouseLoader(BaseLoader):
     connection broke reconnects on the next call instead of staying unusable.
     """
 
-    def __init__(self, config: ClickHouseConfig):
+    def __init__(self, config: ClickHouseConfig) -> None:
         self.config = config
         self._client: Client | None = None
         self._finalizer: weakref.finalize | None = None

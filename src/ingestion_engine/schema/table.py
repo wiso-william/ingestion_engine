@@ -1,7 +1,9 @@
 from dataclasses import dataclass
+
 from ingestion_engine.schema.column import Column
 
-@dataclass 
+
+@dataclass
 class TableConfig:
     """Schema of a single table to ingest.
 

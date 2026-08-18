@@ -1,21 +1,20 @@
 import logging
 
-from ingestion_engine.database.base import BaseLoader
-from ingestion_engine.schema.table import TableConfig
-from ingestion_engine.connectors.base import BaseConnector
-from ingestion_engine.normalizers.base import BaseNormalizer
 from ingestion_engine.batchers.batcher import batcher
-
+from ingestion_engine.connectors.base import BaseConnector
+from ingestion_engine.database.base import BaseLoader
+from ingestion_engine.normalizers.base import BaseNormalizer
+from ingestion_engine.schema.table import TableConfig
 
 logger = logging.getLogger(__name__)
 
 
 def run(
-        connector: BaseConnector,
-        normalizer: BaseNormalizer,
-        loader: BaseLoader,
-        table: TableConfig,
-        batch_size: int = 1000
+    connector: BaseConnector,
+    normalizer: BaseNormalizer,
+    loader: BaseLoader,
+    table: TableConfig,
+    batch_size: int = 1000,
 ) -> None:
     """Run the ingestion pipeline for a single table.
 
@@ -43,19 +42,27 @@ def run(
 
         loader.create_table(table)
 
-        batch_count = 0
         row_count = 0
 
-        for batch in batcher(rows, batch_size):
-            batch_count += 1
+        for batch_count, batch in enumerate(batcher(rows, batch_size), start=1):
             row_count += len(batch)
 
-            logger.info("Loading batch %d with %d rows into ClickHouse", batch_count, len(batch))
+            logger.info(
+                "Loading batch %d with %d rows into the destination",
+                batch_count,
+                len(batch),
+            )
 
             loader.load(table, batch)
 
-        logger.info("Data ingestion pipeline completed successfully for table %s", table.name) 
+        logger.info(
+            "Data ingestion pipeline completed for table %s, %d rows loaded",
+            table.name,
+            row_count,
+        )
 
     except Exception as e:
         logger.exception("Data ingestion pipeline failed for table %s", table.name)
-        raise RuntimeError(f"Data ingestion pipeline failed for table {table.name}") from e
+        raise RuntimeError(
+            f"Data ingestion pipeline failed for table {table.name}"
+        ) from e

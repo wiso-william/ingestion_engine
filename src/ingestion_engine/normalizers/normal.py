@@ -3,14 +3,11 @@ from collections.abc import Iterator
 from ingestion_engine.normalizers.base import BaseNormalizer
 from ingestion_engine.schema.table import TableConfig
 
+
 class DictNormalizer(BaseNormalizer):
     """Normalizer converting dictionary records into tuples."""
 
-    def normalize(
-        self,
-        records: Iterator[dict],
-        table: TableConfig
-    ) -> Iterator[tuple]:
+    def normalize(self, records: Iterator[dict], table: TableConfig) -> Iterator[tuple]:
         """Convert records into tuples following the configured column order.
 
         Each value is looked up by walking the column source_address, whose
@@ -32,9 +29,9 @@ class DictNormalizer(BaseNormalizer):
         for record in records:
             row = []
             for column in table.columns:
-                current = record 
+                current = record
                 for part in column.source_address.split("."):
                     current = current[part]
-                
+
                 row.append(current)
             yield tuple(row)

@@ -30,7 +30,6 @@ from ingestion_engine import (
 )
 from ingestion_engine.config.log_config import setup_logging
 
-
 API_URL = "https://jsonplaceholder.typicode.com/users"
 BATCH_SIZE = 100
 

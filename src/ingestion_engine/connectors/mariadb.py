@@ -1,13 +1,13 @@
-from collections.abc import Iterator
 import logging
+from collections.abc import Iterator
 
 import mariadb
 
-from .base import BaseConnector
 from ingestion_engine.config.mariadb_config import MariaDBConfig
 from ingestion_engine.schema.table import TableConfig
 from ingestion_engine.sql_builder.query_builder import QueryBuilder
 
+from .base import BaseConnector
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class MariaDBConnector(BaseConnector):
     """Connector extracting records from a MariaDB database."""
 
-    def __init__(self, config: MariaDBConfig):
+    def __init__(self, config: MariaDBConfig) -> None:
         self.config = config
 
     def _create_connection(self) -> mariadb.Connection:
@@ -86,7 +86,7 @@ class MariaDBConnector(BaseConnector):
                 logger.debug("Fetched %d rows", len(rows))
 
                 for row in rows:
-                    yield dict(zip(columns, row))
+                    yield dict(zip(columns, row, strict=True))
 
             logger.info("Extraction completed for %s", table.name)
 

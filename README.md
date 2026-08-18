@@ -101,7 +101,9 @@ clickhouse_config = ClickHouseConfig(
 )
 
 run(
-    connector=APIConnector(APIConfig(url="https://example.com/records", headers={}, params={})),
+    connector=APIConnector(
+        APIConfig(url="https://example.com/records", headers={}, params={})
+    ),
     normalizer=DictNormalizer(),
     loader=ClickHouseLoader(clickhouse_config),
     table=my_table,
@@ -257,6 +259,16 @@ failures, and the shipped examples.
 The same suite runs in CI on every push and pull request, across Python 3.10 to
 3.13, together with a lockfile check and a package build.
 
+Linting and formatting are handled by ruff, configured in `pyproject.toml`:
+
+```bash
+uv run ruff check .
+```
+
+```bash
+uv run ruff format --check .
+```
+
 ---
 
 ## Design Goals
@@ -283,6 +295,7 @@ Completed
 - Structured logging
 - Test suite
 - Continuous integration
+- Linting with ruff
 ```
 
 ## License

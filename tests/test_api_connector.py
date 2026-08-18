@@ -1,11 +1,13 @@
 """Tests for APIConnector, including how it maps HTTP failures."""
 
+import re
+
 import pytest
 import requests
 
 from ingestion_engine import APIConfig, APIConnector
 
-
+URL = "https://example.com/records"
 PAYLOAD = [{"id": 1, "name": "first"}, {"id": 2, "name": "second"}]
 
 
@@ -51,7 +53,7 @@ def extract(config: APIConfig, table) -> list[dict]:
 
 
 def build_config(**overrides) -> APIConfig:
-    settings = {"url": "https://example.com/records", "headers": {}, "params": {}}
+    settings = {"url": URL, "headers": {}, "params": {}}
     settings.update(overrides)
 
     return APIConfig(**settings)
@@ -64,7 +66,7 @@ class TestRequest:
 
         extract(config, table)
 
-        assert calls[0]["url"] == "https://example.com/records"
+        assert calls[0]["url"] == URL
         assert calls[0]["headers"] == {"Authorization": "token"}
         assert calls[0]["params"] == {"page": "1"}
 
@@ -158,5 +160,5 @@ class TestFailures:
     def test_the_failing_url_is_named_in_the_error(self, spy_get, table):
         spy_get(error=requests.exceptions.ConnectionError("refused"))
 
-        with pytest.raises(RuntimeError, match="https://example.com/records"):
+        with pytest.raises(RuntimeError, match=re.escape(URL)):
             extract(build_config(), table)

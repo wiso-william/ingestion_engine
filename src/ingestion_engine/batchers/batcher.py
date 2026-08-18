@@ -1,7 +1,8 @@
-from collections.abc import Iterable, Iterator
 import logging
+from collections.abc import Iterable, Iterator
 
 logger = logging.getLogger(__name__)
+
 
 def batcher(
     rows: Iterable[tuple],

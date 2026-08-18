@@ -15,7 +15,6 @@ from examples.tables.product_categories import product_categories
 from examples.tables.users import users
 from ingestion_engine import QueryBuilder, TableConfig
 
-
 EXAMPLE_TABLES = [product_categories, users]
 EXAMPLE_IDS = [table.name for table in EXAMPLE_TABLES]
 

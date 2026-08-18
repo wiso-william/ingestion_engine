@@ -3,10 +3,10 @@ from collections.abc import Iterator
 
 import requests
 
-from .base import BaseConnector
 from ingestion_engine.config.api_config import APIConfig
 from ingestion_engine.schema.table import TableConfig
 
+from .base import BaseConnector
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class APIConnector(BaseConnector):
     The endpoint is expected to answer with a JSON array of records.
     """
 
-    def __init__(self, config: APIConfig):
+    def __init__(self, config: APIConfig) -> None:
         self.config = config
 
     def extract(self, table: TableConfig) -> Iterator[dict]:
@@ -32,7 +32,8 @@ class APIConnector(BaseConnector):
             dict: Each record returned by the API.
 
         Raises:
-            requests.exceptions.MissingSchema: If the configured URL has no valid scheme.
+            requests.exceptions.MissingSchema: If the configured URL has no
+                valid scheme.
             requests.exceptions.Timeout: If the request exceeds the timeout.
             RuntimeError: If the request fails for another reason.
         """
@@ -57,8 +58,7 @@ class APIConnector(BaseConnector):
                 response.status_code,
             )
 
-            for record in response.json():
-                yield record
+            yield from response.json()
 
         except requests.exceptions.MissingSchema:
             logger.exception(
@@ -81,6 +81,4 @@ class APIConnector(BaseConnector):
                 "Failed to retrieve data from %s",
                 self.config.url,
             )
-            raise RuntimeError(
-                f"Failed to retrieve data from {self.config.url}"
-            ) from e
+            raise RuntimeError(f"Failed to retrieve data from {self.config.url}") from e

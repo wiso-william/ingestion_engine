@@ -5,9 +5,17 @@ many batches from reconnecting once per insert. These tests cover that
 lifecycle, since it is the part callers never see and therefore never check.
 """
 
+import contextlib
 import gc
 
-from ingestion_engine import ClickHouseConfig, ClickHouseLoader
+import pytest
+
+from ingestion_engine import (
+    ClickHouseConfig,
+    ClickHouseLoader,
+    Column,
+    TableConfig,
+)
 
 
 def build_loader(**overrides) -> ClickHouseLoader:
@@ -101,12 +109,8 @@ class TestFailureHandling:
         patch_client_factory([RuntimeError("connection lost")])
         loader = build_loader()
 
-        try:
+        with pytest.raises(RuntimeError, match="connection lost"):
             loader.load(table, [(1, "x")])
-        except RuntimeError as error:
-            assert str(error) == "connection lost"
-        else:
-            raise AssertionError("the error was swallowed")
 
     def test_a_failing_operation_drops_the_connection(
         self, patch_client_factory, table
@@ -116,10 +120,8 @@ class TestFailureHandling:
         factory = patch_client_factory([RuntimeError("connection lost")])
         loader = build_loader()
 
-        try:
+        with contextlib.suppress(RuntimeError):
             loader.load(table, [(1, "x")])
-        except RuntimeError:
-            pass
 
         assert factory.closed == 1
 
@@ -131,10 +133,8 @@ class TestFailureHandling:
         factory = patch_client_factory([RuntimeError("connection lost"), None])
         loader = build_loader()
 
-        try:
+        with contextlib.suppress(RuntimeError):
             loader.load(table, [(1, "x")])
-        except RuntimeError:
-            pass
 
         loader.load(table, [(2, "y")])
 
@@ -173,8 +173,6 @@ class TestOperations:
     ):
         """Validation happens while building the DDL, before it is executed."""
 
-        from ingestion_engine import Column, TableConfig
-
         bad = TableConfig(
             name="events; DROP TABLE events",
             columns=[Column("id", "UInt64", "id")],
@@ -182,12 +180,8 @@ class TestOperations:
             source="test",
         )
 
-        try:
+        with pytest.raises(ValueError, match="Invalid table name"):
             build_loader().create_table(bad)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError("the invalid name was accepted")
 
         assert client_factory.clients[0].commands == []
 

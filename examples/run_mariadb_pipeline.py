@@ -26,7 +26,6 @@ from ingestion_engine import (
 )
 from ingestion_engine.config.log_config import setup_logging
 
-
 BATCH_SIZE = 10000
 
 

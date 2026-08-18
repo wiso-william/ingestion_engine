@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 DEFAULT_PORT = 3306
 
 

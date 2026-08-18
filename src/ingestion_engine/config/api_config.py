@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 DEFAULT_CONNECT_TIMEOUT = 5.0
 DEFAULT_READ_TIMEOUT = 30.0
 

@@ -2,7 +2,6 @@ import re
 
 from ingestion_engine.schema.table import TableConfig
 
-
 # Table and column names are interpolated into the statements, so they are
 # restricted to plain unquoted identifiers: anything able to close an
 # identifier and inject SQL is rejected instead of escaped.
@@ -146,14 +145,13 @@ class QueryBuilder:
         name = _validate_identifier(table.name, "table name")
 
         columns = ",\n    ".join(
-            _validate_identifier(col.name, "column name")
-            for col in table.columns
+            _validate_identifier(col.name, "column name") for col in table.columns
         )
 
         query = f"""
-        SELECT 
+        SELECT
             {columns}
-        FROM 
+        FROM
             {name}
         """
         return query

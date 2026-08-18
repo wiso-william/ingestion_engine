@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class ClickHouseConfig:
     """Connection settings of the destination ClickHouse server.
