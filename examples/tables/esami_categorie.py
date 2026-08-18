@@ -10,5 +10,5 @@ esami_categorie = TableConfig(
         Column("medical_area", "Nullable(String)", "medical_area"),
     ],
     order_by="id",
-    source="json_placeholder__users"
+    source="mariadb__esami_categorie"
 )
