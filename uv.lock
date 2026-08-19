@@ -277,9 +277,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "clickhouse-connect" },
-    { name = "mariadb" },
     { name = "python-dotenv" },
     { name = "requests" },
+]
+
+[package.optional-dependencies]
+mariadb = [
+    { name = "mariadb" },
 ]
 
 [package.dev-dependencies]
@@ -292,10 +296,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "clickhouse-connect", specifier = ">=1.5.0" },
-    { name = "mariadb", specifier = ">=1.1.14" },
+    { name = "mariadb", marker = "extra == 'mariadb'", specifier = ">=1.1.14" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "requests", specifier = ">=2.34.2" },
 ]
+provides-extras = ["mariadb"]
 
 [package.metadata.requires-dev]
 dev = [

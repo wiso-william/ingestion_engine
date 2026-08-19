@@ -1,15 +1,17 @@
 """Tests for MariaDBConnector, driven through a fake driver.
 
-The mariadb driver is replaced wholesale, so these tests run without a server
-and without the MariaDB Connector/C the real driver builds against.
+The driver is replaced in sys.modules rather than on the connector, so
+load_driver() runs for real and these tests need neither a server nor the
+MariaDB Connector/C the driver builds against.
 """
 
+import subprocess
+import sys
 from typing import Any
 
 import pytest
 
 from ingestion_engine import MariaDBConfig, MariaDBConnector
-from ingestion_engine.connectors import mariadb as mariadb_module
 
 
 class FakeError(Exception):
@@ -81,7 +83,7 @@ def fake_driver(monkeypatch: pytest.MonkeyPatch):
         driver = type(
             "FakeMariaDB", (), {"connect": staticmethod(connect), "Error": FakeError}
         )
-        monkeypatch.setattr(mariadb_module, "mariadb", driver)
+        monkeypatch.setitem(sys.modules, "mariadb", driver)
 
         state["cursor"] = cursor
         state["connection"] = connection
@@ -196,3 +198,36 @@ class TestExtraction:
         next(records)
 
         assert "kwargs" in state
+
+
+class TestOptionalDriver:
+    """The driver is an optional dependency, so its absence must be handled."""
+
+    def test_the_connector_can_be_built_without_the_driver(self, monkeypatch):
+        monkeypatch.setitem(sys.modules, "mariadb", None)
+
+        assert MariaDBConnector(build_config()) is not None
+
+    def test_extracting_without_the_driver_explains_how_to_install_it(
+        self, monkeypatch, table
+    ):
+        monkeypatch.setitem(sys.modules, "mariadb", None)
+
+        with pytest.raises(RuntimeError, match="uv sync --extra mariadb"):
+            list(MariaDBConnector(build_config()).extract(table))
+
+    def test_the_package_imports_without_the_driver(self):
+        """The whole point of the optional dependency.
+
+        Run in a subprocess with the driver blocked, since the package is
+        already imported in this one.
+        """
+
+        subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.modules['mariadb'] = None; import ingestion_engine",
+            ],
+            check=True,
+        )

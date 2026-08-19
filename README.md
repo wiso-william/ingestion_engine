@@ -31,15 +31,20 @@ The project is built around a modular architecture that cleanly separates extrac
 * [uv](https://docs.astral.sh/uv/)
 * Docker, to run the ClickHouse the examples load into
 
-The MariaDB connector additionally needs MariaDB Connector/C on the system,
-since the `mariadb` driver ships wheels for Windows only and is built from
-source everywhere else. On Debian and Ubuntu:
+The MariaDB connector is the one part with a system dependency. Its driver
+publishes wheels for Windows only, so everywhere else it is built from source
+against MariaDB Connector/C. That makes it an **optional extra**: the package
+installs and imports without it, and nothing but `MariaDBConnector.extract`
+needs it.
+
+To use that connector, install the system library first — on Debian and Ubuntu
+`sudo apt-get install libmariadb-dev` — then the extra:
 
 ```bash
-sudo apt-get install libmariadb-dev
+uv sync --extra mariadb
 ```
 
-The API example does not need it, so it stays runnable everywhere.
+Everything else, the API example included, works from a plain `uv sync`.
 
 ---
 
@@ -232,7 +237,7 @@ The `examples/` directory contains runnable pipelines and the table definitions 
 | Example | Needs | Notes |
 | --- | --- | --- |
 | `run_api_pipeline.py` | only `docker compose up -d` | Public REST API to ClickHouse. Start here. |
-| `run_mariadb_pipeline.py` | a reachable MariaDB, `.env` filled in | Shows the second connector. Also needs MariaDB Connector/C on the system. |
+| `run_mariadb_pipeline.py` | a reachable MariaDB, `.env` filled in, `uv sync --extra mariadb` | Shows the second connector. The extra needs MariaDB Connector/C on the system. |
 
 Run them as modules from the repository root, e.g.
 `uv run python -m examples.run_api_pipeline`.
@@ -283,7 +288,8 @@ here: they are honoured by the type checker of anyone who installs the package.
 CI runs all of it on every push and pull request: the suite across Python 3.10
 to 3.13, the ruff checks, mypy, a lockfile check and a package build. The ruff
 and mypy versions come from the lockfile, so a new release of either cannot
-break the build on its own.
+break the build on its own. No job compiles a system library, which is what
+keeps a full run in the order of seconds.
 
 ---
 

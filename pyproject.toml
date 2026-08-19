@@ -8,9 +8,16 @@ license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "clickhouse-connect>=1.5.0",
-    "mariadb>=1.1.14",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
+]
+
+# The mariadb driver publishes wheels for Windows only, so everywhere else it
+# is built from source against MariaDB Connector/C. It is optional so that the
+# rest of the package installs without that system library.
+[project.optional-dependencies]
+mariadb = [
+    "mariadb>=1.1.14",
 ]
 
 [dependency-groups]

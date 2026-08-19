@@ -1,8 +1,7 @@
 import logging
 from collections.abc import Iterator
-from typing import Any
-
-import mariadb
+from types import ModuleType
+from typing import Any, cast
 
 from ingestion_engine.config.mariadb_config import MariaDBConfig
 from ingestion_engine.schema.table import TableConfig
@@ -12,21 +11,60 @@ from .base import BaseConnector
 
 logger = logging.getLogger(__name__)
 
+DRIVER_MISSING = (
+    "MariaDBConnector needs the mariadb driver, which is not installed. It is "
+    "an optional dependency because it builds against MariaDB Connector/C: "
+    "install that on the system, then the extra with "
+    "`uv sync --extra mariadb`."
+)
+
+
+def load_driver() -> ModuleType:
+    """Return the mariadb driver module.
+
+    The driver is imported here rather than at module level so that importing
+    ingestion_engine does not require MariaDB Connector/C, which the driver
+    builds against. Only code that actually opens a connection needs it.
+
+    Returns:
+        ModuleType: The mariadb module.
+
+    Raises:
+        RuntimeError: If the driver is not installed, explaining how to add it.
+    """
+
+    try:
+        import mariadb
+    except ImportError as error:
+        raise RuntimeError(DRIVER_MISSING) from error
+
+    return cast(ModuleType, mariadb)
+
 
 class MariaDBConnector(BaseConnector):
-    """Connector extracting records from a MariaDB database."""
+    """Connector extracting records from a MariaDB database.
+
+    The driver is an optional dependency: constructing the connector always
+    works, and the driver is required only once extraction starts.
+    """
 
     def __init__(self, config: MariaDBConfig) -> None:
         self.config = config
 
-    def _create_connection(self) -> mariadb.Connection:
+    def _create_connection(self, driver: ModuleType) -> Any:  # noqa: ANN401
         """Open a connection to the configured MariaDB database.
 
+        The return type is Any because the driver ships no annotations, so
+        there is no connection type to refer to.
+
+        Args:
+            driver: The mariadb module, as returned by load_driver().
+
         Returns:
-            mariadb.Connection: An open connection to the database.
+            An open connection to the database.
 
         Raises:
-            mariadb.Error: If the connection cannot be established.
+            Exception: The driver's own error if the connection fails.
         """
 
         logger.info(
@@ -36,7 +74,7 @@ class MariaDBConnector(BaseConnector):
             self.config.database,
         )
 
-        return mariadb.connect(
+        return driver.connect(
             host=self.config.host,
             port=self.config.port,
             user=self.config.user,
@@ -59,14 +97,17 @@ class MariaDBConnector(BaseConnector):
             dict: Records extracted from the table.
 
         Raises:
-            mariadb.Error: If the extraction fails.
+            RuntimeError: If the mariadb driver is not installed.
+            Exception: The driver's own error if the extraction fails.
         """
+
+        driver = load_driver()
 
         connection = None
         cursor = None
 
         try:
-            connection = self._create_connection()
+            connection = self._create_connection(driver)
             cursor = connection.cursor()
 
             query = QueryBuilder.build_select(table)
@@ -91,7 +132,7 @@ class MariaDBConnector(BaseConnector):
 
             logger.info("Extraction completed for %s", table.name)
 
-        except mariadb.Error:
+        except driver.Error:
             logger.exception(
                 "Failed to extract table %s",
                 table.name,
